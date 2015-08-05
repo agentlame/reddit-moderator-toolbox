@@ -3,7 +3,6 @@ TB = {
     utils: TBUtils,
     ui: TBui,
     storage: TBStorage,
-    api: redditapi, // don't call this.  But it does work in concept. IE: $.log(TB.api.WIKI_PAGE_UNKNOWN) will print the string 'WIKI_PAGE_UNKNOWN'.
 
     modules: {},
     moduleList: [],
@@ -327,8 +326,8 @@ box-shadow: 0px 1px 3px 1px #B3C2D1;\n\
 
 
                 // we use a jQuery hack to stick this bind call at the top of the queue,
-                // so that it runs before the bind call in notifier.js
-                // this way we don't have to touch notifier.js to make it work.
+                // so that it runs before the bind call in clwatcher.js
+                // this way we don't have to touch clwatcher.js to make it work.
                 //
                 // We get one additional click handler for each module that gets injected.
                 $body.bindFirst('click', '.tb-save', function (event) {

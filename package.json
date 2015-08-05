@@ -1,11 +1,11 @@
 {
-  "description": "A set of tools to be used by moderators on reddit in order to make their jobs easier.",
+  "description": "toolbox base",
   "license": "Apache 2.0",
   "author": "team toolbox",
-  "version": "3.3.0",
-  "fullName": "Moderator toolbox for reddit",
-  "id": "yes",
-  "name": "reddit_mod_tb",
+  "version": "1.0",
+  "fullName": "toolbox base",
+  "id": "toolboxbase",
+  "name": "toolbox_base",
   "permissions": {
     "private-browsing": true
   }

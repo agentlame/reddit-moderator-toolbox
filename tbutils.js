@@ -2,21 +2,13 @@ function initwrapper() {
 (function (TBUtils) {
 
     // We need these before we can do anything.
-    TBUtils.modhash = $("form.logout input[name=uh]").val();
-    TBUtils.logged = (TBUtils.modhash !== undefined) ? $('span.user a:first').html() : '';
-    TBUtils.post_site = $('.redditname:not(.pagename) a:first').html();  // This may need to be changed to regex, if this is unreliable.
-
-    // validate post_site. TODO: something better than this.
-    if (TBUtils.post_site == "subreddits you moderate" || TBUtils.post_site == "mod (filtered)") {
-        TBUtils.post_site = "";
-    }
+    TBUtils.logged = true;
 
     var CHROME = 'chrome', FIREFOX = 'firefox', OPERA = 'opera', SAFARI = 'safari', UNKOWN_BROWSER = 'unknown',
         ECHO = 'echo', SHORTNAME = 'TBUtils', SETTINGS_NAME = 'Utils';
 
     //Private variables
-    var modMineURL = '/subreddits/mine/moderator.json?count=100',
-        now = new Date().getTime(),
+    var now = new Date().getTime(),
 
         shortLength = TBStorage.getSetting(SETTINGS_NAME, 'shortLength', 15),
         longLength = TBStorage.getSetting(SETTINGS_NAME, 'longLength', 45),
@@ -26,13 +18,11 @@ function initwrapper() {
         cacheName = TBStorage.getCache(SETTINGS_NAME, 'cacheName', ''),
         seenNotes = TBStorage.getSetting(SETTINGS_NAME, 'seenNotes', []),
         lastVersion = TBStorage.getSetting(SETTINGS_NAME, 'lastVersion', 0),
-        toolboxDevs = TBStorage.getSetting(SETTINGS_NAME, 'tbDevs', []),
         newLogin = (cacheName != TBUtils.logged),
         getnewLong = (((now - lastgetLong) / (60 * 1000) > longLength) || newLogin),
         getnewShort = (((now - lastgetShort) / (60 * 1000) > shortLength) || newLogin),
         betaRelease = true,  /// DO NOT FORGET TO SET FALSE BEFORE FINAL RELEASE! ///
-        gettingModSubs = false,
-        getModSubsCallbacks = [],
+
 
         randomQuotes = ["Dude, in like 24 months, I see you Skyping someone to watch them search someone's comments on reddit.",
             "Simple solution, don't use nightmode....",
@@ -71,30 +61,12 @@ function initwrapper() {
 
 
     // Public variables
-    TBUtils.toolboxVersion = '3.3.0' + ((betaRelease) ? ' (beta)' : '');
-    TBUtils.shortVersion = 330; //don't forget to change this one!  This is used for the 'new version' notification.
+    TBUtils.extensionName = 'toolbox base';
+    TBUtils.extensionURL = "http://www.example.com";
+    TBUtils.toolboxVersion = '1.0' + ((betaRelease) ? ' (beta)' : '');
+    TBUtils.shortVersion = 100; //don't forget to change this one!  This is used for the 'new version' notification.
     TBUtils.releaseName = 'YO MAMA';
     TBUtils.configSchema = 1;
-    TBUtils.notesSchema = 6;
-    TBUtils.notesMinSchema = 3;
-    TBUtils.notesDeprecatedSchema = 3;
-    TBUtils.notesMaxSchema = 6;     // The non-default max version (to allow phase-in schema releases)
-    TBUtils.NO_WIKI_PAGE = 'NO_WIKI_PAGE';
-    TBUtils.WIKI_PAGE_UNKNOWN = 'WIKI_PAGE_UNKNOWN';
-    TBUtils.isModmail = location.pathname.match(/(\/message\/(?:moderator)\/?)|(\/r\/.*?\/about\/message\/inbox\/?)/);
-    TBUtils.isModmailUnread = location.pathname.match(/\/message\/(?:moderator\/unread)\/?/);
-    TBUtils.isModpage = location.pathname.match(/\/about\/(?:reports|modqueue|spam|unmoderated|edited)\/?/);
-    TBUtils.isEditUserPage = location.pathname.match(/\/about\/(?:contributors|moderator|banned)\/?/);
-    TBUtils.isModFakereddit = location.pathname.match(/^\/r\/mod\b/) || location.pathname.match(/^\/me\/f\/mod\b/);
-    TBUtils.isToolbarPage = location.pathname.match(/^\/tb\//);
-    TBUtils.isUnreadPage = location.pathname.match(/\/message\/(?:unread)\/?/);
-    TBUtils.isModLogPage = location.pathname.match(/\/about\/(?:log)\/?/);
-    TBUtils.isModQueuePage = location.pathname.match(/\/about\/(?:modqueue)\/?/);
-    TBUtils.isUnmoderatedPage = location.pathname.match(/\/about\/(?:unmoderated)\/?/);
-    TBUtils.isCommentsPage = location.pathname.match(/\?*\/(?:comments)\/?/);
-    TBUtils.isUserPage = location.pathname.match(/\/(?:user)\/?/);
-    TBUtils.isNewPage = location.pathname.match(/\?*\/(?:new)\/?/);
-    TBUtils.isMod = $('body.moderator').length;
     TBUtils.isExtension = true;
     TBUtils.RandomQuote = randomQuotes[Math.floor(Math.random() * randomQuotes.length)];
     TBUtils.RandomFeedback = RandomFeedbackText[Math.floor(Math.random() * RandomFeedbackText.length)];
@@ -105,8 +77,10 @@ function initwrapper() {
     TBUtils.betaMode = TBStorage.getSetting(SETTINGS_NAME, 'betaMode', false);
     TBUtils.advancedMode = TBStorage.getSetting(SETTINGS_NAME, 'advancedMode', false);
     TBUtils.firstRun = false;
-    TBUtils.tbDevs = toolboxDevs;
     TBUtils.betaRelease = betaRelease;
+
+    // Shouldn't really mess with this.
+    TBUtils.devLock = true;
 
     // Stuff from TBStorage
     TBUtils.browser = TBStorage.browser;
@@ -114,16 +88,10 @@ function initwrapper() {
     TBUtils.browsers = TBStorage.browsers;
 
 
-    // Check our post site.  We might want to do some sort or regex fall back here, if it's needed.
-    if (TBUtils.isModFakereddit || TBUtils.post_site === undefined || !TBUtils.post_site) {
-        TBUtils.post_site = '';
-    }
-
-
     // Do settings echo before anything else.  If it fails, exit toolbox.
     var ret = TBStorage.setSetting(SETTINGS_NAME, 'echoTest', ECHO);
     if (ret !== ECHO) {
-        alert('toolbox can not save settings to localstorage\n\ntoolbox will now exit');
+        alert(TBUtils.extensionName + ' can not save settings to localstorage\n\ntoolbox will now exit');
         return;
     }
 
@@ -139,7 +107,7 @@ function initwrapper() {
     TBUtils.mySubsData = (getnewLong) ? [] : TBStorage.getCache(SETTINGS_NAME, 'moderatedSubsData', []);
 
     if (TBUtils.debugMode) {
-        var consoleText = 'toolbox version: ' + TBUtils.toolboxVersion +
+        var consoleText = TBUtils.extensionName + ' version: ' + TBUtils.toolboxVersion +
             ', Browser: ' + TBUtils.browser +
             ', Extension: ' + TBUtils.isExtension +
             ', Beta features: ' + TBUtils.betaMode +
@@ -164,32 +132,10 @@ function initwrapper() {
         TBStorage.setCache(SETTINGS_NAME, 'lastGetShort', now);
     }
 
-    var pushedunread = TBStorage.getSetting('Notifier', 'unreadPushed', []);
-    if (pushedunread.length > 250) {
-        pushedunread.splice(150, (pushedunread.length - 150));
-        TBStorage.setSetting('Notifier', 'unreadPushed', pushedunread);
-    }
-
-    var pusheditems = TBStorage.getSetting('Notifier', 'modqueuePushed', []);
-    if (pusheditems.length > 250) {
-        pusheditems.splice(150, (pusheditems.length - 150));
-        TBStorage.setSetting('Notifier', 'modqueuePushed', pusheditems);
-    }
-
-    var repliedModmail = TBStorage.getSetting('ModMail', 'replied', []);
-    if (repliedModmail.length > 250) {
-        pusheditems.splice(150, (repliedModmail.length - 150));
-        TBStorage.setSetting('ModMail', 'replied', repliedModmail);
-    }
-
     if (seenNotes.length > 250) {
         $.log("clearing seen notes", false, SHORTNAME);
         seenNotes.splice(150, (seenNotes.length - 150));
         TBStorage.setSetting(SETTINGS_NAME, 'seenNotes', seenNotes);
-    }
-
-    if (toolboxDevs.length < 1) {
-        TBUtils.tbDevs = getToolboxDevs();
     }
 
 
@@ -199,7 +145,6 @@ function initwrapper() {
         // These need to happen for every version change
         TBUtils.firstRun = true; // for use by other modules.
         TBStorage.setSetting(SETTINGS_NAME, 'lastVersion', TBUtils.shortVersion); //set last version to this version.
-        TBUtils.tbDevs = getToolboxDevs();  //always repopulate tb devs for each version change
 
         //** This should be a per-release section of stuff we want to change in each update.  Like setting/converting data/etc.  It should always be removed before the next release. **//
 
@@ -209,49 +154,16 @@ function initwrapper() {
         // 3.3 version changes
         $.log('Running ' + TBUtils.toolboxVersion + ' changes', true, SHORTNAME);
 
-        // No longer settings.
-        localStorage.removeItem('Toolbox.ModMail.autoThread');
-        localStorage.removeItem('Toolbox.ModMail.autoThreadOnLoad');
-
-        // This should have been removed long ago.
-        localStorage.removeItem('Toolbox.Utils.lastversion');
 
         // End: version changes.
 
         // These two should be left for every new release. If there is a new beta feature people want, it should be opt-in, not left to old settings.
-        //TBStorage.setSetting('Notifier', 'lastSeenModmail', now); // don't spam 100 new mod mails on first install.
-        //TBStorage.setSetting('Notifier', 'modmailCount', 0);
         TBStorage.setSetting(SETTINGS_NAME, 'debugMode', false);
         TBStorage.setSetting(SETTINGS_NAME, 'betaMode', false);
         TBUtils.debugMode = false;
         TBUtils.betaMode = false;
     }
 
-
-    TBUtils.usernotes = {
-        ver: TBUtils.notesSchema,
-        users: [] //typeof userNotes
-    };
-
-
-    TBUtils.note = {
-        note: '',
-        time: '',
-        mod: '',
-        link: '',
-        type: ''
-    };
-
-
-    TBUtils.warningType = ['gooduser', 'spamwatch', 'spamwarn', 'abusewarn', 'ban', 'permban', 'botban'];
-
-
-    TBUtils.config = {
-        ver: TBUtils.configSchema,
-        domainTags: '',
-        removalReasons: '',
-        modMacros: ''
-    };
 
     TBUtils.events = {
         TB_ABOUT_PAGE: "TB_ABOUT_PAGE",
@@ -280,42 +192,6 @@ function initwrapper() {
        if (!callback) return;
 
         window.addEventListener(tbuEvent, callback);
-    };
-
-    TBUtils.getTypeInfo = function (warningType) {
-        var typeInfo = {
-            name: '',
-            color: '',
-            text: ''
-        };
-
-        switch (String(warningType)) { //not sure why it gets passed as an array.
-            case 'gooduser':
-                typeInfo = {color: 'green', name: 'Contributor', text: 'Good Contributor'};
-                break;
-            case 'spamwatch':
-                typeInfo = {color: 'fuchsia', name: 'Watching', text: 'Spam Watch'};
-                break;
-            case 'spamwarn':
-                typeInfo = {color: 'purple', name: 'Warned', text: 'Spam Warning'};
-                break;
-            case 'abusewarn':
-                typeInfo = {color: 'orange', name: 'Warned', text: 'Abuse Warning'};
-                break;
-            case 'ban':
-                typeInfo = {color: 'red', name: 'Banned', text: 'Ban'};
-                break;
-            case 'permban':
-                typeInfo = {color: 'darkred', name: 'Perma-banned', text: 'Permanent Ban'};
-                break;
-            case 'botban':
-                typeInfo = {color: 'black', name: 'Bot Banned', text: 'Bot Ban'};
-                break;
-            default:
-                typeInfo = {color: '', name: '', text: 'none'};
-        }
-
-        return typeInfo;
     };
 
 	TBUtils.escapeHTML = function(html)
@@ -749,7 +625,6 @@ function initwrapper() {
         });
     };
 
-
     TBUtils.saneSortAs = function (arr) {
         return arr.sort(function (a, b) {
             if (a.toLowerCase() > b.toLowerCase()) return -1;
@@ -761,98 +636,6 @@ function initwrapper() {
     TBUtils.replaceAll = function (find, replace, str) {
         find = find.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
         return str.replace(new RegExp(find, 'g'), replace);
-    };
-
-    TBUtils.cleanSubredditName = function (dirtySub) {
-        dirtySub = dirtySub.replace('/r/', '').replace('/', '').replace('−', '').replace('+', '').trim();
-        return dirtySub;
-    };
-
-
-    TBUtils.getModSubs = function (callback) {
-        $.log('getting mod subs', false, SHORTNAME);
-        // If it has been more than ten minutes, refresh mod cache.
-        if (TBUtils.mySubs.length < 1 || TBUtils.mySubsData.length < 1) {
-            // time to refresh
-            if (gettingModSubs) {
-                // we're already fetching a new list, so enqueue the callback
-                $.log('Enqueueing getModSubs callback', false, SHORTNAME);
-                getModSubsCallbacks.push(callback);
-            } else {
-                // start the process
-                $.log('getting new subs.', false, SHORTNAME);
-
-                gettingModSubs = true;
-                TBUtils.mySubs = []; // reset
-                TBUtils.mySubsData = [];
-                getSubs(modMineURL);
-            }
-        } else {
-            // run callback on cached sublist
-            TBUtils.mySubs = TBUtils.saneSort(TBUtils.mySubs);
-            TBUtils.mySubsData = TBUtils.sortBy(TBUtils.mySubsData, 'subscribers');
-            // Go!
-            callback();
-        }
-
-        function getSubs(URL) {
-            $.getJSON(URL, function (json) {
-                getSubsResult(json.data.children, json.data.after);
-            });
-        }
-
-        // Callback because reddits/mod/mine is paginated.
-        function getSubsResult(subs, after) {
-            $(subs).each(function () {
-                var sub = this.data.display_name.trim();
-                if ($.inArray(sub, TBUtils.mySubs) === -1) {
-                    TBUtils.mySubs.push(sub);
-                }
-
-                var isinthere = false;
-                $(TBUtils.mySubsData).each(function () {
-                    if (this.subreddit === sub) {
-                        isinthere = true
-                    }
-                });
-
-                if (!isinthere) {
-                    var subredditData = {
-                        "subreddit": sub,
-                        "subscribers": this.data.subscribers,
-                        "over18": this.data.over18,
-                        "created_utc": this.data.created_utc,
-                        "subreddit_type": this.data.subreddit_type,
-                        "submission_type": this.data.submission_type
-                    };
-
-                    TBUtils.mySubsData.push(subredditData);
-                }
-            });
-
-            if (after) {
-                var URL = modMineURL + '&after=' + after;
-                getSubs(URL);
-            } else {
-                TBUtils.mySubs = TBUtils.saneSort(TBUtils.mySubs);
-                TBUtils.mySubsData = TBUtils.sortBy(TBUtils.mySubsData, 'subscribers');
-                // Update the cache.
-                TBStorage.setCache(SETTINGS_NAME, 'moderatedSubs', TBUtils.mySubs);
-                TBStorage.setCache(SETTINGS_NAME, 'moderatedSubsData', TBUtils.mySubsData);
-
-                callback();
-                // no idea what the following shit is.
-                // Go!
-                while (getModSubsCallbacks.length > 0) {
-                    // call them in the order they were added
-                    $.log("calling callback " + getModSubsCallbacks[0].name, false, SHORTNAME);
-                    getModSubsCallbacks[0]();
-                    getModSubsCallbacks.splice(0, 1); // pop first element
-                }
-                // done
-                gettingModSubs = false;
-            }
-        }
     };
 
     TBUtils.getHashParameter = function(ParameterKey)
@@ -868,110 +651,6 @@ function initwrapper() {
                 return keyval[1];
             }
         }
-    };
-
-    TBUtils.getThingInfo = function (sender, modCheck) {
-        // If we were passed in a .thing, we may have to walk down the tree to
-        // find the associated .entry
-        var $sender = $(sender),
-            $entry = $($sender.closest('.entry')[0] || $sender.find('.entry')[0] || $sender),
-            $thing = $($sender.closest('.thing')[0] || $sender),
-            user = $entry.find('.author:first').text() || $thing.find('.author:first').text(),
-            subreddit = TBUtils.post_site || $entry.find('.subreddit:first').text() || $thing.find('.subreddit:first').text() || $entry.find('.tagline .head b > a[href^="/r/"]:not(.moderator)').text(),
-            permalink = $entry.find('a.bylink').attr('href') || $entry.find('.buttons:first .first a').attr('href') || $thing.find('a.bylink').attr('href') || $thing.find('.buttons:first .first a').attr('href'),
-            domain = ($entry.find('span.domain:first').text() || $thing.find('span.domain:first').text()).replace('(', '').replace(')', ''),
-            id = $entry.attr('data-fullname') || $thing.attr('data-fullname') || $sender.closest('.usertext').find('input[name=thing_id]').val(),
-            body = '> ' + ($entry.find('.usertext-body:first').text() || $thing.find('.usertext-body:first').text()).split('\n').join('\n> '),
-
-        // These need some fall backs, but only removal reasons use them for now.
-            title = $thing.find('a.title').length ? $thing.find('a.title').text() : '',
-            kind = $thing.hasClass('link') ? 'submission' : 'comment',
-            postlink = $thing.find('a.title').attr('href');
-
-        // removed? spam or ham?
-        var removal = ($entry.find('.flat-list.buttons li b:contains("removed by")').text() || '').match(/removed by (.+) \(((?:remove not |confirm )?spam)/) || [],
-            banned_by = removal[1] || '',
-            spam = removal[2] == 'spam' || removal[2] == 'confirm spam',
-            ham = removal[2] == 'remove not spam';
-
-        if (TBUtils.isEditUserPage && !user) {
-            user = $sender.closest('.user').find('a:first').text() || $entry.closest('.user').find('a:first').text() || $thing.closest('.user').find('a:first').text();
-        }
-
-
-        // If we still don't have a sub, we're in mod mail, or PMs.
-        if (TBUtils.isModmail || $sender.closest('.message-parent')[0] !== undefined) {
-            // Change it to use the parent's title.
-            title = $sender.find('.subject-text:first').text();
-
-            subreddit = (subreddit) ? subreddit : ($entry.find('.head a:last').text() || $thing.find('.head a:last').text());
-
-            //This is a weird palce to go about this, and the conditions are strange,
-            //but if we're going to assume we're us, we better make damned well sure that is likely the case.
-            // if ($entry.find('.remove-button').text() === '') {
-            // The previous check would mistakenly catch removed modmail messages as the user's messages.
-            // This check should be safe, since the only time we get no username in modmail is the user's own message. -dakta
-            // The '.message-parent' check fixes reddit.com/message/messages/, which contains mod mail and PMs.
-
-            // There are two users in the tagline, the first one is the user sending the message so we want to target that user.
-            user = $entry.find('.sender a.author').text();
-
-            // If there is only one use present and it says "to" it means that this is not the user sending the message.
-
-            if ($entry.find('.sender a.author').length < 1 && $entry.find('.recipient a.author').length > 0) {
-                user = TBUtils.logged;
-            }
-
-            if (user === '') {
-                user = TBUtils.logged;
-
-                if (!subreddit || subreddit.indexOf('/r/') < 1) {
-                    // Find a better way, I double dog dare ya!
-                    subreddit = $thing.closest('.message-parent').find('.correspondent.reddit.rounded a').text()
-                }
-            }
-
-
-        }
-
-        // A recent reddit change makes subreddit names sometimes start with "/r/".
-        // Mod mail subreddit names additionally end with "/".
-        // reddit pls, need consistency
-        subreddit = TBUtils.cleanSubredditName(subreddit);
-
-        // Not a mod, reset current sub.
-        if (modCheck && $.inArray(subreddit, TBUtils.mySubs) === -1) {
-            subreddit = '';
-        }
-
-        if (user == '[deleted]') {
-            user = '';
-        }
-
-        var approved_text = $entry.find('.approval-checkmark').attr('title') || $thing.find('.approval-checkmark').attr('title') || '',
-            approved_by = approved_text.match(/by\s(.+?)\s/) || '';
-
-        var info = {
-            subreddit: subreddit,
-            user: user,
-            author: user,
-            permalink: permalink,
-            url: permalink,
-            domain: domain,
-            id: id,
-            body: body,
-            approved_by: approved_by,
-            title: title,
-            kind: kind,
-            postlink: postlink,
-            link: postlink,
-            banned_by: banned_by,
-            spam: spam,
-            ham: ham,
-            mod: TBUtils.logged
-        };
-        //$.log(info, false, SHORTNAME);
-        return info;
     };
 
     TBUtils.replaceTokens = function (info, content) {
@@ -1017,577 +696,14 @@ function initwrapper() {
         }
     };
 
-
-    // Chunking abused for ratelimiting
-    TBUtils.forEachChunkedRateLimit = function (array, chunkSize, call, complete, start) {
-        if (array === null) finish();
-        if (chunkSize === null || chunkSize < 1) finish();
-        if (call === null) finish();
-
-        var length = array.length,
-            counter = 0,
-            delay = 100,
-            limit = (length > chunkSize) ? 20 : 0;
-
-
-        if (length < chunkSize) {
-            chunkSize = length;
-        }
-
-        function doChunk() {
-            if (counter == 0 && start) {
-                start();
-            }
-
-            for (var end = Math.min(array.length, counter + chunkSize); counter < end; counter++) {
-                var ret = call(array[counter], counter, array);
-                if (ret === false) window.setTimeout(finish, delay);
-            }
-            if (counter < array.length) {
-                window.setTimeout(getRatelimit, delay);
-            } else {
-                window.setTimeout(finish, delay);
-            }
-        }
-
-        function getRatelimit() {
-            //return doChunk();
-            TBUtils.getHead('/r/toolbox/wiki/ratelimit.json',
-                function (status, jqxhr) {
-                    var $body = $('body'),
-                        ratelimitRemaining = jqxhr.getResponseHeader('x-ratelimit-remaining'),
-                        ratelimitReset = jqxhr.getResponseHeader('x-ratelimit-reset');
-                    $.log('ratelimitRemaining: ' + ratelimitRemaining + ' ratelimitReset: ' + (ratelimitReset / 60), false, SHORTNAME);
-
-                    if (!$body.find('#ratelimit-counter').length) {
-                        $('div[role="main"].content').append('<span id="ratelimit-counter"></span>');
-                    }
-
-                    if (chunkSize + limit > parseInt(ratelimitRemaining)) {
-                        $body.find('#ratelimit-counter').show();
-                        var count = parseInt(ratelimitReset),
-                            counter = 0;
-
-                        function timer() {
-                            count = count - 1;
-                            if (count <= 0) {
-                                clearInterval(counter);
-                                $body.find('#ratelimit-counter').empty();
-                                $body.find('#ratelimit-counter').hide();
-                                doChunk();
-                                return;
-                            }
-
-                            var minutes = Math.floor(count / 60);
-                            var seconds = count - minutes * 60;
-
-                            $body.find('#ratelimit-counter').html('<b>Oh dear, it seems we have hit a limit, waiting for ' + minutes + ' minutes and ' + seconds + ' seconds before resuming operations.</b>\
-                    <br><br>\
-                    <span class="rate-limit-explain"><b>tl;dr</b> <br> Reddit\'s current ratelimit allows for <i>' + ratelimitRemaining + ' requests</i>. We are currently trying to process <i>' + parseInt(chunkSize) + ' items</i>. Together with toolbox requests in the background that is cutting it a little bit too close. Luckily for us reddit tells us when the ratelimit will be reset, that is the timer you see now.</span>\
-                    ');
-                        }
-
-                        counter = setInterval(timer, 1000);
-
-                    } else {
-                        doChunk();
-                    }
-                });
-        }
-
-        getRatelimit();
-
-        function finish() {
-            return complete ? complete() : false;
-        }
-    };
-
-
-
-    // Reddit API stuff
-    TBUtils.getRatelimit = function getRatelimit(callback) {
-        TBUtils.getHead('/r/toolbox/wiki/ratelimit.json',
-            function (status, jqxhr) {
-            var ratelimitRemaining = jqxhr.getResponseHeader('x-ratelimit-remaining'),
-                ratelimitReset = jqxhr.getResponseHeader('x-ratelimit-reset');
-            $.log('ratelimitRemaining: ' + ratelimitRemaining + ' ratelimitReset: ' + (ratelimitReset / 60), false, SHORTNAME);
-
-            if (typeof callback !== "undefined") {
-                callback({
-                    'ratelimitRemaining': ratelimitRemaining,
-                    'ratelimitReset': ratelimitReset
-                });
-            }
-        });
-    };
-
-    TBUtils.postToWiki = function postToWiki(page, subreddit, data, reason, isJSON, updateAM, callback) {
-        if (reason) {
-            reason = '"' + reason + '" via toolbox';
-        } else {
-            reason = 'updated via toolbox';
-        }
-
-        if (isJSON) {
-            // Not indenting saves precious bytes.
-            //data = JSON.stringify(data, undefined, TBUtils.debugMode ? 2 : undefined);
-            data = JSON.stringify(data);
-        }
-
-        $.log("Posting /r/" + subreddit + "/api/wiki/edit/" + page, false, SHORTNAME);
-
-
-        // If we update automoderator we want to replace any tabs with four spaces.
-        if (updateAM) {
-            data = data.replace(/\t/g, "    ");
-        }
-
-        $.post('/r/' + subreddit + '/api/wiki/edit', {
-            content: data,
-            page: page,
-            reason: reason,
-            uh: TBUtils.modhash
-        })
-
-            .error(function postToWiki_error(err) {
-                $.log(err.responseText, false, SHORTNAME);
-                callback(false, err);
-            })
-
-            .success(function () {
-                // Callback regardless of what happens next.  We wrote to the page.
-                callback(true);
-
-                setTimeout(function () {
-
-                    // Set page access to 'mod only'.
-                    $.post('/r/' + subreddit + '/wiki/settings/', {
-                        page: page,
-                        listed: true, //hrm, may need to make this a config setting.
-                        permlevel: 2,
-                        uh: TBUtils.modhash
-                    })
-
-                        // Super extra double-secret secure, just to be safe.
-                        .error(function (err) {
-                            alert('error setting wiki page to mod only access');
-                            window.location = '/r/' + subreddit + '/wiki/settings/' + page;
-                        });
-
-                }, 500);
-            });
-    };
-
-
-    // reddit HTML encodes all of their JSON responses, we need to HTMLdecode
-    // them before parsing.
-    TBUtils.unescapeJSON = function (val) {
-        if (typeof(val) == "string") {
-            val = val.replace(/&quot;/g, '"')
-                .replace(/&gt;/g, ">").replace(/&lt;/g, "<")
-                .replace(/&amp;/g, "&");
-        }
-        return val;
-    };
-
-
-    TBUtils.readFromWiki = function (subreddit, page, isJSON, callback) {
-        // We need to demangle the JSON ourselves, so we have to go about it this way :(
-        $.ajax('/r/' + subreddit + '/wiki/' + page + '.json', {
-            dataType: "json",
-            dataFilter: function (data, type) {
-                //TODO: right now a lot of functions implicitly rely on reddit
-                //returning escaped JSON to operate safely. add this back in once
-                //everything's been audited.
-
-                //return TBUtils.unescapeJSON(data);
-                return data;
-            }
-        })
-            .success(function (json) {
-                var wikiData = json.data.content_md;
-
-                if (!wikiData) {
-                    callback(TBUtils.NO_WIKI_PAGE);
-                    return;
-                }
-
-                if (isJSON) {
-                    var parsedWikiData;
-                    try {
-                        parsedWikiData = JSON.parse(wikiData);
-                    }
-                    catch (err) {
-                        // we should really have a INVAILD_DATA error for this.
-                        $.log(err, false, SHORTNAME);
-                        callback(TBUtils.NO_WIKI_PAGE);
-                    }
-
-                    // Moved out of the try so random exceptions don't erase the entire wiki page
-                    if (parsedWikiData) {
-                        callback(parsedWikiData);
-                    } else {
-                        callback(TBUtils.NO_WIKI_PAGE);
-                    }
-
-                    return;
-                }
-
-                // We have valid data, but it's not JSON.
-                callback(wikiData);
-
-            })
-            .error(function (jqXHR, textStatus, e) {
-                $.log('Wiki error (' + subreddit + '/' + page + '): ' + e, false, SHORTNAME);
-                if (jqXHR.responseText === undefined) {
-                    callback(TBUtils.WIKI_PAGE_UNKNOWN);
-                    return;
-                }
-
-                var reason = JSON.parse(jqXHR.responseText).reason || '';
-                if (reason == 'PAGE_NOT_CREATED' || reason == 'WIKI_DISABLED') {
-                    callback(TBUtils.NO_WIKI_PAGE);
-                } else {
-                    // we don't know why it failed, we should not try to write to it.
-                    callback(TBUtils.WIKI_PAGE_UNKNOWN);
-                }
-            });
-    };
-
-
-    TBUtils.redditLogin = function (uname, pass, remeber, callback) {
-        $.post('/api/login', {
-            api_type: 'json',
-            passwd: pass,
-            user: uname,
-            rem: remeber
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                $.log(error, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-
-    TBUtils.getBanState = function (subreddit, user, callback) {
-        $.get("/r/" + subreddit + "/about/banned/.json", {user: user}, function (data) {
-            var banned = data.data.children;
-
-            // If it's over or under exactly one item they are not banned or that is not their full name.
-            if (banned.length !== 1) {
-                return callback(false);
-            }
-
-            callback(true, banned[0].note, banned[0].date, banned[0].name);
-        });
-    };
-
-
-    TBUtils.flairPost = function (postLink, subreddit, text, cssClass, callback) {
-        $.post('/api/flair', {
-            api_type: 'json',
-            link: postLink,
-            text: text,
-            css_class: cssClass,
-            r: subreddit,
-            uh: TBUtils.modhash
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.flairUser = function (user, subreddit, text, cssClass, callback) {
-        $.post('/api/flair', {
-            api_type: 'json',
-            name: user,
-            r: subreddit,
-            text: text,
-            css_class: cssClass,
-            uh: TBUtils.modhash
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.friendUser = function (user, action, subreddit, banReason, banMessage, banDuration, callback) {
-        $.post('/api/friend', {
-            api_type: 'json',
-            uh: TBUtils.modhash,
-            type: action,
-            name: user,
-            r: subreddit,
-            note: banReason,
-            ban_message: banMessage,
-            duration: banDuration
-        })
-            .success(function (response) {
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.unfriendUser = function (user, action, subreddit, callback) {
-        $.post('/api/unfriend', {
-            api_type: 'json',
-            uh: TBUtils.modhash,
-            type: action,
-            name: user,
-            r: subreddit
-        })
-            .success(function (response) {
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.distinguishThing = function (id, callback) {
-        $.post('/api/distinguish/yes', {
-            id: id,
-            uh: TBUtils.modhash
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-
-    TBUtils.approveThing = function (id, callback) {
-        $.post('/api/approve', {
-            id: id,
-            uh: TBUtils.modhash
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.removeThing = function (id, spam, callback) {
-        $.post('/api/remove', {
-            uh: TBUtils.modhash,
-            id: id,
-            spam: spam
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.postComment = function (parent, text, callback) {
-        $.post('/api/comment', {
-            parent: parent,
-            uh: TBUtils.modhash,
-            text: text,
-            api_type: 'json'
-        })
-            .success(function (response) {
-                if (response.json.hasOwnProperty("errors") && response.json.errors.length > 0) {
-                    $.log("Failed to post comment to on " + parent, false, SHORTNAME);
-                    $.log(response.json.errors, false, SHORTNAME);
-                    if (typeof callback !== "undefined")
-                        callback(false, response.json.errors);
-                    return;
-                }
-
-                $.log("Successfully posted comment on " + parent, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                $.log("Failed to post link to on" + parent, false, SHORTNAME);
-                $.log(error, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.postLink = function (link, title, subreddit, callback) {
-        $.post('/api/submit', {
-            kind: 'link',
-            resubmit: 'true',
-            url: link,
-            uh: TBUtils.modhash,
-            title: title,
-            sr: subreddit,
-            sendreplies: 'true', //this is the default on reddit.com, so it should be our default.
-            api_type: 'json'
-        })
-            .success(function (response) {
-                if (response.json.hasOwnProperty("errors") && response.json.errors.length > 0) {
-                    $.log("Failed to post link to /r/" + subreddit, false, SHORTNAME);
-                    $.log(response.json.errors, false, SHORTNAME);
-                    if (typeof callback !== "undefined")
-                        callback(false, response.json.errors);
-                    return;
-                }
-
-                $.log("Successfully posted link to /r/" + subreddit, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                $.log("Failed to post link to /r/" + subreddit, false, SHORTNAME);
-                $.log(error, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.sendMessage = function (user, subject, message, subreddit, callback) {
-        $.post('/api/compose', {
-            from_sr: subreddit,
-            subject: subject,
-            text: message,
-            to: user,
-            uh: TBUtils.modhash,
-            api_type: 'json'
-        })
-            .success(function (response) {
-                if (response.json.hasOwnProperty("errors") && response.json.errors.length > 0) {
-                    $.log("Failed to send link to /u/" + user, false, SHORTNAME);
-                    $.log(response.json.errors, false, SHORTNAME);
-                    if (typeof callback !== "undefined")
-                        callback(false, response.json.errors);
-                    return;
-                }
-
-                $.log("Successfully send link to /u/" + user, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                $.log("Failed to send link to /u/" + user, false, SHORTNAME);
-                $.log(error, false, SHORTNAME);
-                if (typeof callback !== "undefined")
-                    callback(false, error);
-            });
-    };
-
-    TBUtils.sendPM = function (to, subject, message, callback) {
-        $.post('/api/compose', {
-            to: to,
-            uh: TBUtils.modhash,
-            subject: subject,
-            text: message
-        })
-            .success(function () {
-                if (typeof callback !== "undefined")
-                    callback(true);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error.responseText);
-            });
-    };
-
-    TBUtils.markMessageRead = function (id, callback) {
-        $.post('/api/read_message', {
-            api_type: 'json',
-            id: id,
-            uh: TBUtils.modhash
-        });
-    };
-
-    TBUtils.aboutUser = function (user, callback) {
-        $.get('/user/' + user + '/about.json', {
-            uh: TBUtils.modhash
-        })
-            .success(function (response) {
-                if (typeof callback !== "undefined")
-                    callback(true, response);
-            })
-            .error(function (error) {
-                if (typeof callback !== "undefined")
-                    callback(false, error.responseText);
-            });
-    };
-
     // Import export methods
     TBUtils.exportSettings = function (subreddit, callback) {
-        var settingsObject = {};
-        $(TBStorage.settings).each(function () {
-            if (this == 'Storage.settings') return; // don't backup the setting registry.
-
-            var key = this.split("."),
-                setting = TBStorage.getSetting(key[0], key[1], null);
-
-            if (setting !== null && setting !== undefined) { // DO NOT, EVER save null (or undefined, but we shouldn't ever get that)
-                settingsObject[this] = setting;
-            }
-        });
-
-        TBUtils.postToWiki('tbsettings', subreddit, settingsObject, 'exportSettings', true, false, function () {
-            callback();
-        });
+        $.log("exportSettings is not implemented", false, SHORTNAME);
     };
 
 
     TBUtils.importSettings = function (subreddit, callback) {
-        TBUtils.readFromWiki(subreddit, 'tbsettings', true, function (resp) {
-            if (!resp || resp === TBUtils.WIKI_PAGE_UNKNOWN || resp === TBUtils.NO_WIKI_PAGE) {
-                $.log("Error loading wiki page", false, SHORTNAME);
-                return;
-            }
-
-            if (TBUtils.domain != 'www') {
-                TBui.textFeedback("Cannot import from " + TBUtils.domain + ".reddit.com.");
-                $.log("Cannot import from " + TBUtils.domain + ".reddit.com.", false, SHORTNAME);
-                return;
-            }
-
-            if (resp['Utils.lastversion'] < 300) {
-                TBui.textFeedback("Cannot import from a toolbox version under 3.0");
-                $.log("Cannot import from a toolbox version under 3.0", false, SHORTNAME);
-                return;
-            }
-
-            $.each(resp, function (fullKey, value) {
-                var key = fullKey.split(".");
-
-                TBStorage.setSetting(key[0], key[1], value);
-            });
-
-            callback();
-        });
+        $.log("importSettings is not implemented", false, SHORTNAME);
     };
 
 
@@ -1604,32 +720,6 @@ function initwrapper() {
         for (var i = 0, color = "#"; i < 3; color += ("00" + ((hash >> i++ * 8) & 0xFF).toString(16)).slice(-2));
 
         return color;
-    };
-
-
-    // Added back for MMP's live mod mail.
-    TBUtils.compressHTML = function (src) {
-        return src.replace(/(\n+|\s+)?&lt;/g, '<').replace(/&gt;(\n+|\s+)?/g, '>').replace(/&amp;/g, '&').replace(/\n/g, '').replace(/child" >  False/, 'child">');
-    };
-
-
-    TBUtils.addToSiteTable = function (URL, callback) {
-        if (!URL || !callback) callback(null);
-
-        $.get(URL, function (resp) {
-            if (!resp) callback(null);
-
-            resp = resp.replace(/<script(.|\s)*?\/script>/g, '');
-            var $sitetable = $(resp).find('#siteTable');
-            $sitetable.find('.nextprev').remove();
-
-            if ($sitetable) {
-                callback($sitetable);
-            } else {
-                callback(null);
-            }
-
-        });
     };
 
 
@@ -1678,94 +768,6 @@ function initwrapper() {
     };
 
 
-    TBUtils.getReasonsFromCSS = function (sub, callback) {
-
-        // If not, build a new one, getting the XML from the stylesheet
-        $.get('/r/' + sub + '/about/stylesheet.json').success(function (response) {
-            if (!response.data) {
-                callback(false);
-                return;
-            }
-
-            // See if this subreddit is configured for leaving reasons using <removalreasons2>
-            var match = response.data.stylesheet.replace(/\n+|\s+/g, ' ')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .match(/<removereasons2>.+<\/removereasons2>/i);
-
-            // Try falling back to <removalreasons>
-            if (!match) {
-                match = response.data.stylesheet.replace(/\n+|\s+/g, ' ')
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .match(/<removereasons>.+<\/removereasons>/i);
-            }
-
-            // Neither can be found.
-            if (!match) {
-                callback(false);
-                return;
-            }
-
-            // Create valid XML from parsed string and convert it to a JSON object.
-            var XML = $(match[0]);
-            var reasons = [];
-
-            XML.find('reason').each(function () {
-                var reason = {
-                    text: escape(this.innerHTML)
-                };
-                reasons.push(reason);
-            });
-
-            var oldReasons = {
-                pmsubject: XML.find('pmsubject').text() || '',
-                logreason: XML.find('logreason').text() || '',
-                header: escape(XML.find('header').text() || ''),
-                footer: escape(XML.find('footer').text() || ''),
-                logsub: XML.find('logsub').text() || '',
-                logtitle: XML.find('logtitle').text() || '',
-                bantitle: XML.find('bantitle').text() || '',
-                getfrom: XML.find('getfrom').text() || '',
-                reasons: reasons
-            };
-
-            callback(oldReasons);
-        }).error(function () {
-            callback(false);
-        });
-    };
-
-    // private functions
-    function getToolboxDevs() {
-        //TODO: actually pull these from /r/toolbox/about/moderators.json
-        var devs = ['agentlame', 'creesch', 'LowSociety ', 'TheEnigmaBlade', 'dakta', 'largenocream', 'psdtwk', 'noeatnosleep', 'Garethp'];
-        TBStorage.setSetting(SETTINGS_NAME, 'tbDevs', devs);
-        return devs;
-    }
-
-
-    // NER, load more comments, and mod frame support.
-    $('div.content').on('DOMNodeInserted', function (e) {
-        var $target = $(e.target), $parentNode = $(e.target.parentNode);
-        if (!($target.hasClass("sitetable") && ($target.hasClass("listing") || $target.hasClass("linklisting") ||
-            $target.hasClass("modactionlisting"))) && !$parentNode.hasClass('morecomments') && !$target.hasClass('flowwit')) return;
-
-        $.log('TBNewThings firing from: ' + $target.attr('class'), false, SHORTNAME);
-
-        // Wait a sec for stuff to load.
-        setTimeout(function () {
-            var event = new CustomEvent("TBNewThings");
-            window.dispatchEvent(event);
-        }, 1000);
-    });
-
-    // NER support. todo: finish this.
-    //window.addEventListener("neverEndingLoad", function () {
-    //    $.log('NER! NER! NER! NER!');
-    //});
-
-
     window.onbeforeunload = function () {
         // TBUI now handles the long load array.
         if (TBui.longLoadArray.length > 0) {
@@ -1787,68 +789,11 @@ function initwrapper() {
 
 
     // get toolbox news
+    /*
     (function getNotes() {
-        TBUtils.readFromWiki('toolbox', 'tbnotes', true, function (resp) {
-            if (!resp || resp === TBUtils.WIKI_PAGE_UNKNOWN || resp === TBUtils.NO_WIKI_PAGE || resp.length < 1) return;
-
-            // Custom FF nag for updates.
-            if (resp.ffVersion > TBUtils.shortVersion && TBUtils.browser == FIREFOX && TBUtils.isExtension) {
-                TBUtils.alert("There is a new version of toolbox for Firefox!  Click here to update.", function (clicked) {
-                    if (clicked) window.open('http://creesch.github.io/reddit-moderator-toolbox/downloads/reddit_mod_tb_' + resp.ffVersion + '.xpi');
-                });
-                return; //don't spam the user with notes until they have the current version.
-            }
-
-            // Custom Safari nag for updates.
-            if (resp.safariVersion > TBUtils.shortVersion && TBUtils.browser == SAFARI && TBUtils.isExtension) {
-                TBUtils.alert("There is a new version of toolbox for Safari!  Click here to update.", function (clicked) {
-                    if (clicked) window.open('http://creesch.github.io/reddit-moderator-toolbox/downloads/reddit_mod_tb_' + resp.safariVersion + '.safariextz');
-                });
-                return; //don't spam the user with notes until they have the current version.
-            }
-
-            if (TBUtils.debugMode && resp.devVersion > TBUtils.shortVersion && TBUtils.isExtension) {
-                TBUtils.alert("There is a new development version of toolbox!  Click here to update.", function (clicked) {
-                    if (clicked) window.open("https://github.com/creesch/reddit-moderator-toolbox");
-                });
-            }
-
-            $(resp.notes).each(function () {
-                TBUtils.showNote(this);
-            });
-        });
-
-        if (betaRelease) {
-            TBUtils.readFromWiki('tb_beta', 'tbnotes', true, function (resp) {
-                if (!resp || resp === TBUtils.WIKI_PAGE_UNKNOWN || resp === TBUtils.NO_WIKI_PAGE || resp.length < 1) return;
-                $(resp.notes).each(function () {
-                    TBUtils.showNote(this);
-                });
-            });
-        }
-
-        //check dev sub, if debugMode
-        if (TBUtils.debugMode) {
-            TBUtils.readFromWiki('tb_dev', 'tbnotes', true, function (resp) {
-                if (!resp || resp === TBUtils.WIKI_PAGE_UNKNOWN || resp === TBUtils.NO_WIKI_PAGE || resp.length < 1) {
-                    TBUtils.devMode = false;
-                    TBUtils.devModeLock = true;
-                    return;
-                }
-
-                $(resp.notes).each(function () {
-                    TBUtils.showNote(this);
-                });
-            });
-        }
+      // not implemented
     })();
-
-    // get rate limit
-    if (TBUtils.debugMode) {
-        (function getRateLimit() {
-            TBUtils.getRatelimit();
-        })();
-    }
+    */
 
 }(TBUtils = window.TBUtils || {}));
 }

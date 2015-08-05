@@ -4,7 +4,7 @@
 (function () {
 
     // load storage if we're not on the reset page.
-    if (window.location.href.indexOf('/r/tb_reset/comments/26jwfh/click_here_to_reset_all_your_toolbox_settings/') < 0) {
+    if (window.location.href.indexOf('http://www.craigslist.org/about/scams') < 0) {
         storagewrapper();
         return;
     }
@@ -33,7 +33,7 @@
 
             // Wait a sec for stuff to clear.
             setTimeout(function () {
-                window.location.href = "//" + domain + ".reddit.com/r/tb_reset/comments/26jwpl/your_toolbox_settings_have_been_reset/";
+                window.location.href = "http://www.craigslist.org/";
             }, 1000);
         }
 
@@ -80,20 +80,23 @@
 
 function storagewrapper() {
 (function (TBStorage) {
-    if (!$("form.logout input[name=uh]").val() || $('.mod-toolbox').length) return; // not logged in or toolbox is already loaded.
+    $.log('init quit');
+    //if (!$("form.logout input[name=uh]").val() || $('.mod-toolbox').length) return; // not logged in or toolbox is already loaded.
 
 
     var SHORTNAME = 'TBStorage';
 
-    // Type safe keys.
-    TBStorage.SAFE_STORE_KEY = 'Toolbox.Storage.safeToStore';
-
     TBStorage.settings = JSON.parse(localStorage['Toolbox.Storage.settings'] || '[]');  //always use local storage.
     TBStorage.domain = window.location.hostname.split('.')[0];
 
+    //Settings for subdomain storage protection
+    TBStorage.SAFE_STORE_KEY = 'Toolbox.Storage.safeToStore';
+    TBStorage.PREFERED_SUBDOMAIN = 'www';
+    TBStorage.protectSubdomainStorage = true;
+
     $.log('Domain: ' + TBStorage.domain, false, SHORTNAME);
 
-    localStorage[TBStorage.SAFE_STORE_KEY] = (TBStorage.domain === 'www');
+    localStorage[TBStorage.SAFE_STORE_KEY] = (TBStorage.protectSubdomainStorage) ? true : (TBStorage.domain === TBStorage.PREFERED_SUBDOMAIN);
 
 
     var CHROME = 'chrome', FIREFOX = 'firefox', OPERA = 'opera', SAFARI = 'safari', UNKOWN_BROWSER = 'unknown';
