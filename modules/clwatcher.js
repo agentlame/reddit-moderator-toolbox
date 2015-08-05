@@ -94,7 +94,7 @@ self.init = function () {
 
 self.checkPage = function() {
     var pageToCheck = self.setting('pageToCheck');
-    $.get(pageToCheck, function (page) {
+    $.get('//' + pageToCheck, function (page) {
         var $page = $(page),
             $hdrlnk = $page.find('.hdrlnk'),
 
