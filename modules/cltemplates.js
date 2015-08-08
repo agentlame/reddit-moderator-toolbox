@@ -56,34 +56,27 @@ self.templatePicker = function () {
     if (!posting) return;
     self.log('posting page!');
 
-    template.phoneNumber = '2165022126';
-    template.contactName = 'Neil';
-    template.title = '10 mins from downtown! No application fee today only!';
-    template.location = '1555 Bryden Rd';
-    template.zipCode = '43205';
-    template.postBody = '- One Bedroom Apartment\
-\n- $99 Deposit!\
-\n- Newly Renovated\
-\n- Air Conditioning\
-\n- Plenty Of Closet Space, Fully Equipped Kitchen\
-\n- On-site laundry Facility\
-\n- On bus line\
-\n- Close  downtown\
-\n- Cats welcome!\
-\n- On-site Maintenance';
-
-    template.squareFeet = '300';
-    template.rent = '300';
-    template.bedrooms = '2'; //2
-    template.bathrooms = '5'; //2
-    template.laundry = '2'; //laundry in bldg
-    template.parking = '4'; //off-street parking
-    template.catsAllowed = true;
-    template.dogsAllowed = true;
-    template.street = "1555 Bryden Rd";
-    template.crossStreet = "Kelton Rd";
-    template.city = "Columbus";
-    template.state = "OH";
+    template = {
+        "templateName":"2BR - EW - First month free",
+        "contactName":"Neil",
+        "title":"First month free!  Move in today!",
+        "location":"Columbus",
+        "phoneNumber":"2165022126",
+        "zipCode":"43205",
+        "postBody":"Located less than 2 miles from OSU and the Medical Center, this popular Grandview community offers 25 unique 1, 2, and 3 bedroom apartment floor plans -- including roommate-friendly 2 and 3 bedroom layouts.\n\n* Upgraded kitchens with stainless steel appliances\n* Washer and dryer in all apartment homes\n* Two resort-style pools, 24 hour fitness center and free tanning\n* Onsite parking garage and covered parking available\n* Walking distance to the Columbus Ale House and Brazenhead\n\nBeautiful 2BR/2BA with Huge Closets in Grandview! Only 1 left!\n\n$1049 -- Stylish 1BR! Huge Walk-in Closet\n$1159- Spacious 1 BR with Den!\n$1499 -- Unique 2BR with Separate Dining Room!",
+        "squareFeet":"600",
+        "rent":"790",
+        "bedrooms":"2",
+        "bathrooms":"4",
+        "laundry":"1",
+        "parking":"2",
+        "catsAllowed":false,
+        "dogsAllowed":true,
+        "street":"1555 Bryden Rd",
+        "crossStreet":"Kelton Ave",
+        "city":"Columbus",
+        "state":"Ohio"
+    };
 
 
     var $byPhone = $('#contact_phone_ok'), //check
@@ -164,8 +157,52 @@ self.templateBuilder = function () {
                 <input type="text" id="contact-name" placeholder="contact name" /><br/>\
                 <input type="text" id="post-title" placeholder="title of post" /><br/>\
                 <input type="text" id="post-location" placeholder="location" /><br/>\
-                <input type="number" id="contact-phone" placeholder="phone number" /> <input type="number" id="zip-code" placeholder="zipcode" /> <br/>\
+                \
+                <input type="number" id="contact-phone" placeholder="phone number" /> \
+                <input type="number" id="zip-code" placeholder="zipcode" />\
+                <input type="number" id="square-feet" placeholder="square feet" /> \
+                <input type="number" id="rent" placeholder="rent" /> <br/>\
+                \
                 <textarea class="post-body" rows="10" placeholder="posting body"></textarea><br/>\
+                <!-- NOTE: the values used are based on the values used on the posting page. That is why they seem out of order. -->\
+                <label> bedrooms: <select id="post-bedrooms"> \
+                    <option value="0">0</option>\
+                    <option value="1">1</option>\
+                    <option value="2">2</option>\
+                    <option value="3">3</option>\
+                    <option value="4">4</option>\
+                </select></label>\
+                <label> bathrooms: <select id="post-bathrooms">\
+                    <option value="3">1</option>\
+                    <option value="4">1.5</option>\
+                    <option value="5">2</option>\
+                    <option value="6">2.5</option>\
+                    <option value="7">3</option>\
+                </select></label>\
+                <label> laundry: <select id="post-laundry">\
+                    <option value="2">laundry in bldg</option>\
+                    <option value="1">w/d in unit</option>\
+                    <option value="3">laundry on site</option>\
+                    <option value="4">w/d hookups</option>\
+                    <option value="5">no laundry on site</option>\
+                </select></label>\
+                <label> parking: <select id="post-parking">\
+                    <option value="4">off-street parking</option>\
+                    <option value="5">street parking</option>\
+                    <option value="1">carport</option>\
+                    <option value="2">attached garage</option>\
+                    <option value="3">detached garage</option>\
+                    <option value="7">no parking</option>\
+                </select></label> <br/>\
+                \
+                <label><input type="checkbox" id="cats-allowed">cats allowed</label>\
+                <label><input type="checkbox" id="dogs-allowed">dogs allowed</label>\
+                \
+                <input type="text" id="post-street" placeholder="street address"/><br/>\
+                <input type="text" id="cross-street" placeholder="cross street (optional)" /><br/>\
+                <input type="text" id="post-city" placeholder="city" /><br/>\
+                <input type="text" id="post-state" placeholder="state" /><br/>\
+                \
                 <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
             </span>\
             <table id="tb-template-list">\
@@ -193,28 +230,36 @@ self.templateBuilder = function () {
         // Save new reason
         $body.on('click', '.save-new-template', function () {
 
-            var templateName = $body.find('#template-name').val(),
-                name = $body.find('#contact-name').val(),
-                title = $body.find('#post-title').val(),
-                location = $body.find('#post-location').val(),
-                phoneNumber = $body.find('#contact-phone').val(),
-                zipCode = $body.find('#zip-code').val(),
-                postBody = $body.find('.post-body').val();
-
             var template = {
-                templateName: templateName,
-                contactName: name,
-                title: title,
-                location: location,
-                phoneNumber: phoneNumber,
-                zipCode: zipCode,
-                postBody: postBody
+                templateName: $body.find('#template-name').val(),
+                contactName: $body.find('#contact-name').val(),
+                title: $body.find('#post-title').val(),
+                location: $body.find('#post-location').val(),
+                phoneNumber: $body.find('#contact-phone').val(),
+                zipCode: $body.find('#zip-code').val(),
+                postBody: $body.find('.post-body').val(),
+
+                squareFeet: $body.find('#square-feet').val(),
+                rent: $body.find('#rent').val(),
+                bedrooms: $body.find('#post-bedrooms').val(),
+                bathrooms: $body.find('#post-bathrooms').val(),
+                laundry: $body.find('#post-laundry').val(),
+                parking: $body.find('#post-parking').val(),
+
+                catsAllowed: $body.find('#cats-allowed').prop("checked"),
+                dogsAllowed: $body.find('#dogs-allowed').prop("checked"),
+
+                street: $body.find('#post-street').val(),
+                crossStreet: $body.find('#cross-street').val(),
+                city: $body.find('#post-city').val(),
+                state: $body.find('#post-state').val()
             };
+
+            self.log(template);
 
             var templates = self.setting('templates');
             templates.push(template);
             self.setting('templates', templates);
-
 
 
             // And finally we repopulate the reasons list and hide the current form.
@@ -230,6 +275,18 @@ self.templateBuilder = function () {
             $body.find('#contact-phone').val('');
             $body.find('#zip-code').val('');
             $body.find('.post-body').val('');
+            $body.find('#square-feet').val('');
+            $body.find('#rent').val('');
+            $body.find('#post-bedrooms').val('0');
+            $body.find('#post-bathrooms').val('3');
+            $body.find('#post-laundry').val('2');
+            $body.find('#post-parking').val('4');
+            $body.find('#cats-allowed').prop("checked", false);
+            $body.find('#dogs-allowed').prop("checked", false);
+            $body.find('#post-street').val('');
+            $body.find('#cross-street').val('');
+            $body.find('#post-city').val('');
+            $body.find('#post-state').val('');
         });
 
         /*
