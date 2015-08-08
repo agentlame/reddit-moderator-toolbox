@@ -26,7 +26,20 @@ var template = {
     title: '',
     location: '',
     zipCode: '',
-    postBody: ''
+    postBody: '',
+    squareFeet: '',
+    rent: '',
+    bedrooms: '',
+    bathrooms: '',
+    laundry: '',
+    parking: '',
+    catsAllowed: '',
+    dogsAllowed: '',
+    wantMap: '',
+    street: '',
+    crossStreet: '',
+    city: '',
+    state: ''
 };
 
 var $body = $('body');
@@ -59,23 +72,77 @@ self.templatePicker = function () {
 \n- Cats welcome!\
 \n- On-site Maintenance';
 
-    var $contactPhone = $('#contact_phone'),
+    template.squareFeet = '300';
+    template.rent = '300';
+    template.bedrooms = '2'; //2
+    template.bathrooms = '5'; //2
+    template.laundry = '2'; //laundry in bldg
+    template.parking = '4'; //off-street parking
+    template.catsAllowed = true;
+    template.dogsAllowed = true;
+    template.street = "1555 Bryden Rd";
+    template.crossStreet = "Kelton Rd";
+    template.city = "Columbus";
+    template.state = "OH";
+
+
+    var $byPhone = $('#contact_phone_ok'), //check
+        $contactPhone = $('#contact_phone'),
         $contactName = $('#contact_name'),
         $postingTitle = $('#PostingTitle'),
         $location = $('#GeographicArea'),
         $zipCode = $('#postal_code'),
         $postBody = $('#PostingBody'),
-        $titleDiv = $('.title ');
+        $titleDiv = $('.title '),
+
+        $squareFeet = $('#Sqft'),
+        $rent = $('input[name=Ask]'),
+        $bedrooms = $('#Bedrooms'), //select
+        $bathrooms = $('#bathrooms'), //select
+        $laundry = $('#laundry'), //select
+        $parking = $('#parking'), //select
+        $cats = $('#pets_cat'), //check
+        $dogs = $('#pets_dog'), //check
+        $showMap = $('#wantamap'), //check
+        $street = $('#xstreet0'),
+        $crossStreet = $('#xstreet1'),
+        $city = $('#city'),
+        $state = $('#region');
+
 
     $titleDiv.before('<a href="javascript:;" class="tb-paste-template tb-general-button">paste template</a><br><br>');
 
     $body.on('click', '.tb-paste-template', function () {
+        // non=optionals
+        $byPhone.prop('checked', true);
+
+        // conditionals
+        if (template.street && template.city && template.state) {
+            $showMap.prop('checked', true);
+            //$showMap[0].click();
+        }
+
         $contactPhone.val(template.phoneNumber);
         $contactName.val(template.contactName);
         $postingTitle.val(template.title);
         $location.val(template.location);
         $zipCode.val(template.zipCode);
         $postBody.val(template.postBody);
+
+        $squareFeet.val(template.squareFeet);
+        $rent.val(template.rent);
+        $bedrooms.val(template.bedrooms);
+        $bathrooms.val(template.bathrooms);
+        $laundry.val(template.laundry);
+        $parking.val(template.parking);
+        $cats.val(template.catsAllowed);
+        $dogs.val(template.dogsAllowed);
+
+        $street.val(template.street);
+        $crossStreet.val(template.crossStreet);
+        $city.val(template.city);
+        $state.val(template.state);
+
     });
 };
 
