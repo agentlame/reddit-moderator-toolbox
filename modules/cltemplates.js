@@ -29,9 +29,15 @@ var template = {
     postBody: ''
 };
 
+var $body = $('body');
+
 self.init = function () {
-    var $body = $('body'),
-        posting = $('.posting').length;
+    self.templateBuilder();
+    self.templatePicker();
+};
+
+self.templatePicker = function () {
+    var posting = $('.posting').length;
 
     // Not a posting page.
     if (!posting) return;
@@ -71,28 +77,33 @@ self.init = function () {
         $zipCode.val(template.zipCode);
         $postBody.val(template.postBody);
     });
+};
+
+self.templateBuilder = function () {
 
     TB.utils.catchEvent(TB.utils.events.TB_TEMPLATE_BUILDER, function () {
-        $overlay = TB.ui.overlay(
+        self.log('loading template builder');
+
+        var $overlay = TB.ui.overlay(
             'template builder',
             [
                 {
                     title: '',
                     tooltip: '',
                     content: '\
-                <a href="javascript:;" id="tb-add-template"><img src="data:image/png;base64,' + TBui.iconAdd + '"> Add new template</a>\
-                <span id="tb-add-template-form" style="display: none">\
-                    <input type="text" id="template-name" placeholder="name of template"/><br/>\
-                    <input type="text" id="contact-name" placeholder="contact name" /><br/>\
-                    <input type="text" id="post-title" placeholder="title of post" /><br/>\
-                    <input type="text" id="post-location" placeholder="location" /><br/>\
-                    <input type="number" id="contact-phone" placeholder="phone number" /> <input type="number" id="zip-code" placeholder="zipcode" /> <br/>\
-                    <textarea class="post-body" rows="10" placeholder="posting body"></textarea><br/>\
-                    <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
-                </span>\
-                <table id="tb-template-list">\
-                </table>\
-                ',
+            <a href="javascript:;" id="tb-add-template"><img src="data:image/png;base64,' + TBui.iconAdd + '"> Add new template</a>\
+            <span id="tb-add-template-form" style="display: none">\
+                <input type="text" id="template-name" placeholder="name of template"/><br/>\
+                <input type="text" id="contact-name" placeholder="contact name" /><br/>\
+                <input type="text" id="post-title" placeholder="title of post" /><br/>\
+                <input type="text" id="post-location" placeholder="location" /><br/>\
+                <input type="number" id="contact-phone" placeholder="phone number" /> <input type="number" id="zip-code" placeholder="zipcode" /> <br/>\
+                <textarea class="post-body" rows="10" placeholder="posting body"></textarea><br/>\
+                <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
+            </span>\
+            <table id="tb-template-list">\
+            </table>\
+            ',
                     footer: ''
                 }
             ],
@@ -155,18 +166,18 @@ self.init = function () {
         });
 
         /*
-        // cancel
-        $body.on('click', '#tb-add-removal-reason-form .cancel-new-reason', function () {
+         // cancel
+         $body.on('click', '#tb-add-removal-reason-form .cancel-new-reason', function () {
 
-            $body.find('#tb-add-removal-reason').show();
-            $body.find('#tb-add-removal-reason-form').hide();
-            $body.find('#tb-add-removal-reason-form .edit-area').val('');
-            $body.find('#tb-add-removal-reason-form input[name=removal-title]').val('');
-            $body.find('#tb-add-removal-reason-form input[name=flair-text]').val('');
-            $body.find('#tb-add-removal-reason-form input[name=flair-css]').val('');
-            $body.find('#tb-add-removal-reason-form input[name=edit-note]').val('');
-        });
-        */
+         $body.find('#tb-add-removal-reason').show();
+         $body.find('#tb-add-removal-reason-form').hide();
+         $body.find('#tb-add-removal-reason-form .edit-area').val('');
+         $body.find('#tb-add-removal-reason-form input[name=removal-title]').val('');
+         $body.find('#tb-add-removal-reason-form input[name=flair-text]').val('');
+         $body.find('#tb-add-removal-reason-form input[name=flair-css]').val('');
+         $body.find('#tb-add-removal-reason-form input[name=edit-note]').val('');
+         });
+         */
 
         // With this function we'll fetch the removal reasons!
         function populateTemplates() {
@@ -196,24 +207,24 @@ self.init = function () {
 
 
                 var templateTemplate = '\
-                <tr class="template" data-reason="{{i}}">\
-                    <td class="template-buttons">\
-                        <a href="javascript:;" data-reason="{{i}}" class="edit"><img src="data:image/png;base64,{{uiCommentEdit}}"></a> <br>\
-                        <a href="javascript:;" data-reason="{{i}}" class="delete"><img src="data:image/png;base64,{{uiCommentRemove}}"></a>\
-                    </td>\
-                    <td class="template-content" data-reason="{{i}}">\
-                        <span class="template-label" data-for="template-{{i++}}"><span><h3 class="template-title">{{title}}</h3>{{label}}</span></span><br>\
-                        <span class="template-edit" style="display: none">\
-                        <input type="text" id="template-name" placeholder="name of template" value="{{templateName}}"/><br/>\
-                        <input type="text" id="contact-name" placeholder="contact name" value="{{name}}"/><br/>\
-                        <input type="text" id="post-title" placeholder="title of post" value="{{title}}"/><br/>\
-                        <input type="text" id="post-location" placeholder="location" value="{{location}}"/><br/>\
-                        <input type="number" id="contact-phone" placeholder="phone number" value="{{phoneNumber}}"/> <input type="number" id="zip-code" placeholder="zipcode" value="{{zipCode}}"/> <br/>\
-                        <textarea class="post-body" rows="10" placeholder="posting body">{{postBody}}</textarea><br/>\
-                        <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
-                        </span>\
-                    </td>\
-                </tr>';
+            <tr class="template" data-reason="{{i}}">\
+                <td class="template-buttons">\
+                    <a href="javascript:;" data-reason="{{i}}" class="edit"><img src="data:image/png;base64,{{uiCommentEdit}}"></a> <br>\
+                    <a href="javascript:;" data-reason="{{i}}" class="delete"><img src="data:image/png;base64,{{uiCommentRemove}}"></a>\
+                </td>\
+                <td class="template-content" data-reason="{{i}}">\
+                    <span class="template-label" data-for="template-{{i++}}"><span><h3 class="template-title">{{title}}</h3>{{label}}</span></span><br>\
+                    <span class="template-edit" style="display: none">\
+                    <input type="text" id="template-name" placeholder="name of template" value="{{templateName}}"/><br/>\
+                    <input type="text" id="contact-name" placeholder="contact name" value="{{name}}"/><br/>\
+                    <input type="text" id="post-title" placeholder="title of post" value="{{title}}"/><br/>\
+                    <input type="text" id="post-location" placeholder="location" value="{{location}}"/><br/>\
+                    <input type="number" id="contact-phone" placeholder="phone number" value="{{phoneNumber}}"/> <input type="number" id="zip-code" placeholder="zipcode" value="{{zipCode}}"/> <br/>\
+                    <textarea class="post-body" rows="10" placeholder="posting body">{{postBody}}</textarea><br/>\
+                    <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
+                    </span>\
+                </td>\
+            </tr>';
 
                 var templateTemplateHTML = TBUtils.template(templateTemplate, {
                     'i': i,
@@ -237,9 +248,7 @@ self.init = function () {
 
         }
         populateTemplates();
-
-
-
+        
     });
 };
 
