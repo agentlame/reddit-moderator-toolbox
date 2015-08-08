@@ -33,8 +33,8 @@ var template = {
     bathrooms: '',
     laundry: '',
     parking: '',
-    catsAllowed: '',
-    dogsAllowed: '',
+    catsAllowed: false,
+    dogsAllowed: false,
     wantMap: '',
     street: '',
     crossStreet: '',
@@ -119,7 +119,6 @@ self.templatePicker = function () {
         // conditionals
         if (template.street && template.city && template.state) {
             $showMap.prop('checked', true);
-            //$showMap[0].click();
         }
 
         $contactPhone.val(template.phoneNumber);
@@ -135,8 +134,9 @@ self.templatePicker = function () {
         $bathrooms.val(template.bathrooms);
         $laundry.val(template.laundry);
         $parking.val(template.parking);
-        $cats.val(template.catsAllowed);
-        $dogs.val(template.dogsAllowed);
+
+        $cats.prop('checked', template.catsAllowed);
+        $dogs.prop('checked', template.dogsAllowed);
 
         $street.val(template.street);
         $crossStreet.val(template.crossStreet);
