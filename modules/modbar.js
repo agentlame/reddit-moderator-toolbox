@@ -463,13 +463,22 @@ self.init = function() {
 
     function checkHash() {
         if (window.location.hash) {
-            var module = TB.utils.getHashParameter('tbsettings');
+            var module = TB.utils.getHashParameter('tbsettings'),
+                setting = TB.utils.getHashParameter('setting');
 
+            self.log(setting);
             if (module) {
                 // prevent tbsetting URL hash from persisting on reload.
                 history.pushState("", document.title, window.location.pathname);
 
                 module = module.toLocaleLowerCase();
+                setting = setting.toLocaleLowerCase();
+
+                if (setting) {
+                    var id = '#tb-' + module + '-' + setting;
+                    var hlSet = id + ' p {background-color: #'+ TB.ui.standardColors.softyellow +';}';
+                    $('head').append('<style type="text/css">' + hlSet + '</style>');
+                }
 
                 // Wait a sec for stuff to load.
                 setTimeout(function () {
@@ -482,7 +491,7 @@ self.init = function() {
         }
     }
     checkHash();
-    setInterval(checkHash, 1000);
+    setInterval(checkHash, 500);
 
     // change tabs
     $body.on('click', '.tb-window-tabs a:not(.active)', function () {

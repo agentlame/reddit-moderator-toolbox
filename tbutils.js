@@ -635,6 +635,7 @@ function initwrapper() {
     {
         var hash = window.location.hash.substring(1);
         var params = hash.split('&');
+        $.log(params, false, SHORTNAME);
         for (var i = 0; i < params.length; i++)
         {
             var keyval = params[i].split('='),
