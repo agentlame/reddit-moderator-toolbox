@@ -90,7 +90,7 @@ self.checkPage = function() {
             SMS_LINK = 'sms:',
             CHECK_DELAY = self.setting('checkDelay');
 
-        if (contactNumber === 0) {
+        if (contactNumber == 0) {
             self.log('No contact number found.');
             TBUtils.alert("No contact number saved. Click here to add one.", function () {
                 window.location.href = "/#?tbsettings=clwatcher";
@@ -103,6 +103,7 @@ self.checkPage = function() {
 
 
         function cleanTelNumber(number) {
+            number = number.toString();
             number = number.replace(TEL_STRING, '');
             number = number.replace(SMS_LINK, '');
             number = TBUtils.replaceAll('.', '', number);
