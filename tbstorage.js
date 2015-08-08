@@ -4,7 +4,7 @@
 (function () {
 
     // load storage if we're not on the reset page.
-    if (window.location.href.indexOf('http://www.craigslist.org/about/scams') < 0) {
+    if (window.location.href.indexOf('/tb/reset') < 0) {
         storagewrapper();
         return;
     }
@@ -97,7 +97,7 @@ function storagewrapper() {
     $.log('Domain: ' + TBStorage.domain, false, SHORTNAME);
 
     localStorage[TBStorage.SAFE_STORE_KEY] = (TBStorage.protectSubdomainStorage) ? true : (TBStorage.domain === TBStorage.PREFERED_SUBDOMAIN);
-
+    $.log('Safe store: ' +  localStorage[TBStorage.SAFE_STORE_KEY], false, SHORTNAME);
 
     var CHROME = 'chrome', FIREFOX = 'firefox', OPERA = 'opera', SAFARI = 'safari', UNKOWN_BROWSER = 'unknown';
     TBStorage.browsers = {

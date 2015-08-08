@@ -82,6 +82,14 @@ function initwrapper() {
     // Shouldn't really mess with this.
     TBUtils.devLock = true;
 
+    //* REMOVE THIS *//
+    /*
+    TBUtils.debugMode = true;
+    TBUtils.devMode = true;
+    TBUtils.betaMode = true;
+    TBUtils.advancedMode = true;
+    */
+
     // Stuff from TBStorage
     TBUtils.browser = TBStorage.browser;
     TBUtils.domain = TBStorage.domain;
@@ -110,8 +118,8 @@ function initwrapper() {
         var consoleText = TBUtils.extensionName + ' version: ' + TBUtils.toolboxVersion +
             ', Browser: ' + TBUtils.browser +
             ', Extension: ' + TBUtils.isExtension +
-            ', Beta features: ' + TBUtils.betaMode +
-            '\n\n"' + TBUtils.RandomQuote+ '"\n';
+            ', Beta features: ' + TBUtils.betaMode;// +
+            //'\n\n"' + TBUtils.RandomQuote+ '"\n';
 
         TBUtils.log.push(consoleText);
     }
@@ -166,10 +174,8 @@ function initwrapper() {
 
 
     TBUtils.events = {
-        TB_ABOUT_PAGE: "TB_ABOUT_PAGE",
-        TB_APPROVE_THING: "TB_APPROVE_THING",
-        TB_FLY_SNOO: 'TB_FLY_SNOO',
-        TB_KILL_SNOO: 'TB_KILL_SNOO'
+        TB_TEMPLATE_BUILDER: 'TB_TEMPLATE_BUILDER',
+        TB_ABOUT_PAGE: "TB_ABOUT_PAGE"
     };
 
     // Methods and stuff
@@ -482,8 +488,8 @@ function initwrapper() {
     };
 
 
-    TBUtils.notification = function (title, body, url, markreadid) {
-        var timeout = 10000;
+    TBUtils.notification = function (title, body, url, timeout) {
+        if  (!timeout) timout = 10000;
 
         var toolboxnotificationenabled = true;
 
@@ -513,13 +519,6 @@ function initwrapper() {
             notification.onclick = function () {
                 // Open the page
                 $.log('notification clicked', false, SHORTNAME);
-                if (markreadid !== 'undefined') {
-                    $.post('/api/read_message', {
-                        id: markreadid,
-                        uh: TBUtils.modhash,
-                        api_type: 'json'
-                    });
-                }
 
                 open(url);
                 // Remove notification
@@ -548,13 +547,7 @@ function initwrapper() {
                     notification.onclick = function () {
                         // Open the page
                         $.log('notification clicked', false, SHORTNAME);
-                        if (markreadid !== 'undefined') {
-                            $.post('/api/read_message', {
-                                id: markreadid,
-                                uh: TBUtils.modhash,
-                                api_type: 'json'
-                            });
-                        }
+
                         open(url);
                         // Remove notification
                         this.close();

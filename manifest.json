@@ -24,7 +24,8 @@
             ],
             "css": [
                 "styles/toolbox.css",
-                "styles/modbar.css"
+                "styles/modbar.css",
+                "styles/cltemplates.css"
             ],
             "js": [
                 "libs/jquery-2.1.1.js",
@@ -36,6 +37,7 @@
                 "tbmodule.js",
                 "modules/modbar.js",
                 "modules/clwatcher.js",
+                "modules/cltemplates.js",
                 "tbmoduleinit.js"
             ]
         }

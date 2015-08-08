@@ -1,4 +1,4 @@
-function notifiermod() {
+function clwatcher() {
 var self = new TB.Module('CL Watcher');
 self.shortname = 'ClWatcher';
 
@@ -16,7 +16,8 @@ self.register_setting('contactName', {
 self.register_setting('pageToCheck', {
     'type': 'text',
     'default': 'columbus.craigslist.org/search/apa',
-    'title': 'Page to check'
+    'title': 'Page to check',
+    'advanced': true
 });
 
 self.register_setting('contactNumber', {
@@ -28,31 +29,26 @@ self.register_setting('contactNumber', {
 // Advanced settings
 self.register_setting('checkDelay', {
     'type': 'number',
-    'default': 500,
+    'default': 1000,
     'title': 'Delay between checking each post (in milliseconds)',
     'advanced': true
 });
+
 self.register_setting('checkInterval', {
     'type': 'number',
-    'default': 30, // 60 secs.
+    'default': 50, // 60 secs.
     'advanced': true,
     'title': 'Interval to check for new items (time in minutes).'
-});
-
-// Hidden settings.
-self.register_setting('wwwNotifications', {
-    'type': 'boolean',
-    'default': false,
-    'title': 'Only check for notifications on www.reddit.com (prevents duplicate notifications)',
-    'hidden': true
 });
 
 /// Private storage settings.
 self.register_setting('lastChecked', {
     'type': 'number',
     'default': -1,
-    'hidden': true
+    'advanced': true
 });
+
+var now = TB.utils.getTime();
 
 self.init = function () {
 
@@ -63,26 +59,13 @@ self.init = function () {
     function getmessages() {
         self.log('getting messages');
 
-        // get some of the variables again, since we need to determine if there are new messages to display and counters to update.
-        var lastchecked = self.setting('lastChecked'),
-            now = TB.utils.getTime();
+
+        var lastchecked = self.setting('lastChecked');
 
         if ((now - lastchecked) < checkInterval) {
             self.log('too soon: ' + (now - lastchecked) + ' waiting for: ' + checkInterval);
             return;
         }
-
-
-        // We still want counts updated, just no notifications shown.
-        // That's why we do this here.
-        if (wwwNotifications && TB.utils.domain !== 'www') {
-            self.log("non-www domain; don't show notifications");
-            return;
-        }
-
-        //$.log('updating totals');
-        // We're checking now.
-        self.setting('lastChecked', now);
 
         self.log('running check');
         self.checkPage();
@@ -107,6 +90,17 @@ self.checkPage = function() {
             SMS_LINK = 'sms:',
             CHECK_DELAY = self.setting('checkDelay');
 
+        if (contactNumber === 0) {
+            self.log('No contact number found.');
+            TBUtils.alert("No contact number saved. Click here to add one.", function () {
+                window.location.href = "//craigslist.org/#?tbsettings=clwatcher";
+            });
+            return;
+        }
+
+        // We're checking now.
+        self.setting('lastChecked', now);
+
 
         function cleanTelNumber(number) {
             number = number.replace(TEL_STRING, '');
@@ -120,9 +114,7 @@ self.checkPage = function() {
         }
 
         function notFound() {
-            TBUtils.alert("You do not have a post on the front page!", function () {
-                window.location.href = "https://post.craigslist.org/";
-            })
+            TBUtils.notification("You do not have a post on the front page!", "Click here to post a new ad.", "//post.craigslist.org/", 100000);
         }
 
         function processLink(id, idx) {
@@ -139,18 +131,24 @@ self.checkPage = function() {
                     telNum = cleanTelNumber(telNum);
                     self.log(telNum);
 
-                    found = (contactNumber == telNum);
+                    if (contactNumber == telNum) {
+                        found = true;
+                        TBui.longLoadNonPersistent(false);
+                    }
                     self.log('found: ' + found);
                 }
 
                 if (idx == (totalLinks - 1) && !found) {
+                    self.log('not found');
                     notFound();
+                    TBui.longLoadNonPersistent(false);
                 }
             })
 
         }
 
         self.log(totalLinks);
+        TBui.longLoadNonPersistent(true, "Checking front page for posts.", TBui.FEEDBACK_NEUTRAL, 10000, TBui.DISPLAY_BOTTOM);
         if (totalLinks > 0) {
             $hdrlnk.each(function (idx, link) {
                 var id = $(link).data('id');
@@ -165,10 +163,10 @@ self.checkPage = function() {
 };
 
 TB.register_module(self);
-} // notifier() wrapper
+}
 
 (function () {
     window.addEventListener("TBModuleLoaded", function () {
-        notifiermod();
+        clwatcher();
     });
 })();

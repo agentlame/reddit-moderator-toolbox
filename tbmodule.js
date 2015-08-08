@@ -169,6 +169,16 @@ TB = {
 
                     // automagical handling of input types
                     switch (options.type) {
+                        case 'action':
+                            if (!options.event || !options.class) break;
+
+                            $setting.append(TB.ui.button(title, options.class));
+
+                            $body.on('click', '.' + options.class, function () {
+                                TB.utils.sendEvent(options.event);
+                            });
+
+                            break;
                         case "boolean":
                             $setting.append($('<label>').append($('<input type="checkbox" />').prop('checked', module.setting(setting))).append(' ' + title));
                             break;

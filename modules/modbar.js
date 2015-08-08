@@ -127,6 +127,7 @@ self.init = function() {
     }
 
     $body.append(modBar);
+    $body.append(modbarhid);
 
 
     if (TBUtils.firstRun) {
@@ -202,8 +203,6 @@ self.init = function() {
 
         $(shortcut).appendTo('#tb-toolbarshortcuts');
     });
-
-    $(footer).prepend(modbarhid);
 
     // Always default to hidden.
 

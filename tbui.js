@@ -183,6 +183,9 @@
     TBui.DISPLAY_BOTTOM = 'bottom';
     TBui.DISPLAY_CURSOR = 'cursor';
 
+    TBui.button = function button(text, classes) {
+      return '<a href="javascript:;" class="tb-general-button '+ classes +'">'+ text +'</a>'
+    };
 
     // Popup HTML generator
     TBui.popup = function popup(title, tabs, meta, css_class, opts) {
@@ -466,8 +469,8 @@
                     bottom: 10px !important\
                 }\
                 </style>');
-                $('.footer-parent').append('<div id="tb-loading-stuff"><span class="tb-loading-content"><img src="https://creesch.github.io/reddit-moderator-toolbox/hosted_images/long_load_spinner.gif" alt="loading"> <span class="tb-loading-text">' + TBUtils.RandomFeedback + '</span></span></div>');
-                $('.footer-parent').append('<div id="tb-loading"></div>');
+                $('.tb-toolbar').after('<div id="tb-loading-stuff"><span class="tb-loading-content"><img src="https://creesch.github.io/reddit-moderator-toolbox/hosted_images/long_load_spinner.gif" alt="loading"> <span class="tb-loading-text">' + TBUtils.RandomFeedback + '</span></span></div>');
+                $('.tb-toolbar').after('<div id="tb-loading"></div>');
                 var $randomFeedbackWindow = $('body').find('#tb-loading-stuff');
                 var randomFeedbackLeftMargin = ($randomFeedbackWindow.outerWidth() / 2),
                     randomFeedbackTopMargin = ($randomFeedbackWindow.outerHeight() / 2);
@@ -516,8 +519,7 @@
                 }\
                 </style>');
 
-
-                $('.footer-parent').append('<div id="tb-loading-non-persistent"></div>');
+                $('.tb-toolbar').after('<div id="tb-loading-non-persistent"></div>');
 
 
                 TBui.longLoadArrayNonPersistent.push('load');
