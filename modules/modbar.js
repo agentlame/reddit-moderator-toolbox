@@ -130,8 +130,8 @@ self.init = function() {
     $body.append(modbarhid);
 
 
-    if (TBUtils.firstRun) {
-        $('.tb-first-run').show();
+    if (!TBUtils.firstRun) {
+        $('.tb-first-run').hide();
     }
 
     // Debug mode/console

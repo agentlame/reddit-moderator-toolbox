@@ -2,9 +2,11 @@
 
 //Reset toolbox settings support
 (function () {
+    var resetURL = '/tb/reset',//should be a 404 page that doesn't redirect.
+        resetRedirect = "/"; // should never be the same as resetURL.
 
     // load storage if we're not on the reset page.
-    if (window.location.href.indexOf('/tb/reset') < 0) {
+    if (window.location.href.indexOf(resetURL) < 0) {
         storagewrapper();
         return;
     }
@@ -33,7 +35,7 @@
 
             // Wait a sec for stuff to clear.
             setTimeout(function () {
-                window.location.href = "http://www.craigslist.org/";
+                window.location.href = resetRedirect;
             }, 1000);
         }
 
@@ -92,11 +94,15 @@ function storagewrapper() {
     //Settings for subdomain storage protection
     TBStorage.SAFE_STORE_KEY = 'Toolbox.Storage.safeToStore';
     TBStorage.PREFERED_SUBDOMAIN = 'www';
-    TBStorage.protectSubdomainStorage = true;
+    TBStorage.protectSubdomainStorage = false;
 
     $.log('Domain: ' + TBStorage.domain, false, SHORTNAME);
 
-    localStorage[TBStorage.SAFE_STORE_KEY] = (TBStorage.protectSubdomainStorage) ? true : (TBStorage.domain === TBStorage.PREFERED_SUBDOMAIN);
+    localStorage[TBStorage.SAFE_STORE_KEY] = true;
+    if (TBStorage.protectSubdomainStorage) {
+        localStorage[TBStorage.SAFE_STORE_KEY] = (TBStorage.domain === TBStorage.PREFERED_SUBDOMAIN)
+    }
+
     $.log('Safe store: ' +  localStorage[TBStorage.SAFE_STORE_KEY], false, SHORTNAME);
 
     var CHROME = 'chrome', FIREFOX = 'firefox', OPERA = 'opera', SAFARI = 'safari', UNKOWN_BROWSER = 'unknown';
