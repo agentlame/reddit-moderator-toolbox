@@ -81,7 +81,7 @@ self.checkPage = function() {
         var $page = $(page),
             $hdrlnk = $page.find('.hdrlnk'),
 
-            contactNumber = self.setting('contactNumber'),
+            contactNumber = cleanTelNumber(self.setting('contactNumber')),
             found = false,
             totalLinks = $hdrlnk.length,
 
@@ -93,7 +93,7 @@ self.checkPage = function() {
         if (contactNumber === 0) {
             self.log('No contact number found.');
             TBUtils.alert("No contact number saved. Click here to add one.", function () {
-                window.location.href = "//craigslist.org/#?tbsettings=clwatcher";
+                window.location.href = "/#?tbsettings=clwatcher";
             });
             return;
         }
