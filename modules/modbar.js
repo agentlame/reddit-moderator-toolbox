@@ -464,6 +464,9 @@ self.init = function() {
         var module = TB.utils.getHashParameter('tbsettings');
 
         if (module) {
+            // prevent tbsetting URL hash from persisting on reload.
+            history.pushState("", document.title, window.location.pathname);
+
             module = module.toLocaleLowerCase();
 
             // Wait a sec for stuff to load.
@@ -543,6 +546,7 @@ self.init = function() {
 
         $('.tb-settings').remove();
         $body.css('overflow', 'auto');
+
 
         TB.storage.verifiedSettingsSave(function (succ) {
             if (succ) {
