@@ -248,7 +248,7 @@ self.templateBuilder = function () {
 
         }
         populateTemplates();
-        
+
     });
 };
 

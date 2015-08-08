@@ -409,6 +409,7 @@ self.init = function() {
     <h3>Based on:</h3>\
     <a href="https://github.com/creesch/reddit-moderator-toolbox">toolbox for reddit</a><br><br>\
     <h3>Asset credits:</h3>\
+    <a href="https://pixabay.com/en/briefcase-toolbox-box-tools-157280/" target="_blank">toolbox base icon by OpenClipartVectors</a><br>\
     <a href="http://www.famfamfam.com/lab/icons/silk/" target="_blank">Silk icon set by Mark James</a><br>\
     <a href="http://p.yusukekamiyamane.com/" target="_blank">Diagona icon set by Yusuke Kamiyamane</a><br>\
     <a href="http://momentumdesignlab.com/" target="_blank">Momentum Matte icons</a><br><br>\
