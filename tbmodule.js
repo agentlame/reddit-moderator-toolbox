@@ -172,11 +172,12 @@ TB = {
                     switch (options.type) {
                         case 'action':
                             if (!options.event || !options.class) break;
+                            var event = options.event;
 
                             $setting.append(TB.ui.button(title, options.class));
 
                             $body.on('click', '.' + options.class, function () {
-                                TB.utils.sendEvent(options.event);
+                                TB.utils.sendEvent(event);
                             });
 
                             break;
@@ -308,7 +309,7 @@ box-shadow: 0px 1px 3px 1px #B3C2D1;\n\
                     }
                     if(!noWrap) {
                         $setting = $('<span>').attr('class', 'setting-item').append($setting);
-                        $setting.attr('id', 'tb-' + module.shortname.toLocaleLowerCase() + '-' + setting.toLocaleLowerCase());
+                        $setting.attr('id', 'tb-' + module.shortname.toLowerCase() + '-' + setting.toLowerCase());
                         $setting.data('module', module.shortname);
                         $setting.data('setting', setting);
                     }
