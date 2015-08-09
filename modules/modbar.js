@@ -475,9 +475,9 @@ self.init = function() {
                 setting = setting.toLocaleLowerCase();
 
                 if (setting) {
-                    var id = '#tb-' + module + '-' + setting;
-                    var hlSet = id + ' p {background-color: #'+ TB.ui.standardColors.softyellow +';}';
-                    $('head').append('<style type="text/css">' + hlSet + '</style>');
+                    var id = '#tb-' + module + '-' + setting,
+                        highlightedCSS = id + ' p {background-color: #'+ TB.ui.standardColors.softyellow +'; display: block !important;}';
+                    $('head').append('<style type="text/css">' + highlightedCSS + '</style>');
                 }
 
                 // Wait a sec for stuff to load.

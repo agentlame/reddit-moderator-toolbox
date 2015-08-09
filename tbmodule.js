@@ -152,17 +152,18 @@ TB = {
                         continue;
                     }
 
-                    // hide advanced settings
+                    // hide advanced settings, but do it via CSS so it can be overridden.
+                    var displaySetting = true;
                     if (options.hasOwnProperty("advanced")
                         && options["advanced"] && !TB.utils.advancedMode
                     ) {
-                        continue;
+                        displaySetting = false;
                     }
 
                     moduleHasSettingTab = true;
 
                     // blank slate
-                    var $setting = $('<p></p>'),
+                    var $setting = $('<p ' + ((displaySetting) ? '' : 'style="display:none;"') + '></p>'),
                         execAfterInject = [],
                         title = (options.title) ? options.title : '(' + setting + ')',
                         noWrap = false;
