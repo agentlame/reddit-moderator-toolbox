@@ -56,27 +56,29 @@ self.templatePicker = function () {
     if (!posting) return;
     self.log('posting page!');
 
+    /*
     template = {
-        "templateName":"2BR - EW - First month free",
-        "contactName":"Neil",
-        "title":"First month free!  Move in today!",
-        "location":"Columbus",
-        "phoneNumber":"2165022126",
-        "zipCode":"43205",
-        "postBody":"Located less than 2 miles from OSU and the Medical Center, this popular Grandview community offers 25 unique 1, 2, and 3 bedroom apartment floor plans -- including roommate-friendly 2 and 3 bedroom layouts.\n\n* Upgraded kitchens with stainless steel appliances\n* Washer and dryer in all apartment homes\n* Two resort-style pools, 24 hour fitness center and free tanning\n* Onsite parking garage and covered parking available\n* Walking distance to the Columbus Ale House and Brazenhead\n\nBeautiful 2BR/2BA with Huge Closets in Grandview! Only 1 left!\n\n$1049 -- Stylish 1BR! Huge Walk-in Closet\n$1159- Spacious 1 BR with Den!\n$1499 -- Unique 2BR with Separate Dining Room!",
-        "squareFeet":"600",
-        "rent":"790",
-        "bedrooms":"2",
-        "bathrooms":"4",
-        "laundry":"1",
-        "parking":"2",
-        "catsAllowed":false,
-        "dogsAllowed":true,
-        "street":"1555 Bryden Rd",
-        "crossStreet":"Kelton Ave",
-        "city":"Columbus",
-        "state":"Ohio"
+        "templateName": "2BR - EW - First month free",
+        "contactName": "Neil",
+        "title": "First month free!  Move in today!",
+        "location": "Columbus",
+        "phoneNumber": "2165022126",
+        "zipCode": "43205",
+        "postBody": "Located less than 2 miles from OSU and the Medical Center, this popular Grandview community offers 25 unique 1, 2, and 3 bedroom apartment floor plans -- including roommate-friendly 2 and 3 bedroom layouts.\n\n* Upgraded kitchens with stainless steel appliances\n* Washer and dryer in all apartment homes\n* Two resort-style pools, 24 hour fitness center and free tanning\n* Onsite parking garage and covered parking available\n* Walking distance to the Columbus Ale House and Brazenhead\n\nBeautiful 2BR/2BA with Huge Closets in Grandview! Only 1 left!\n\n$1049 -- Stylish 1BR! Huge Walk-in Closet\n$1159- Spacious 1 BR with Den!\n$1499 -- Unique 2BR with Separate Dining Room!",
+        "squareFeet": "600",
+        "rent": "790",
+        "bedrooms": "2",
+        "bathrooms": "4",
+        "laundry": "1",
+        "parking": "2",
+        "catsAllowed": false,
+        "dogsAllowed": true,
+        "street": "1555 Bryden Rd",
+        "crossStreet": "Kelton Ave",
+        "city": "Columbus",
+        "state": "Ohio"
     };
+    */
 
 
     var $byPhone = $('#contact_phone_ok'), //check
@@ -103,8 +105,73 @@ self.templatePicker = function () {
         $state = $('#region');
 
 
-    $titleDiv.before('<a href="javascript:;" class="tb-paste-template tb-general-button">paste template</a><br><br>');
+    //$titleDiv.before('<a href="javascript:;" class="tb-paste-template tb-general-button">paste template</a><br><br>');
+    var TEMPLATE_SELECT = 'TEMPLATE_SELECT',
+        templates = self.setting('templates');
 
+    if (templates.length <1 ){
+        self.log('no templates found');
+        return;
+    }
+
+    self.log('adding template select');
+    $titleDiv.before('<select class="tb-template-select"><option value="' + TEMPLATE_SELECT + '">select template</option></select><br><br>');
+
+
+    var $templateSelect = $('.tb-template-select');
+    $(templates).each(function (idx, template) {
+        self.log('found template: ' + template.templateName);
+        $templateSelect.append($('<option>', {
+            value: idx
+        }).text(template.templateName));
+
+    });
+
+    $templateSelect.change(function () {
+        var $this = $(this),
+            templateIndex = $this.val(),
+            template = templates[templateIndex];
+
+
+        if (templateIndex !== TEMPLATE_SELECT) {
+            self.log('inserting template');
+
+            // non=optionals
+            $byPhone.prop('checked', true);
+
+            // conditionals
+            if (template.street && template.city && template.state) {
+                $showMap.prop('checked', true);
+            }
+
+            $contactPhone.val(template.phoneNumber);
+            $contactName.val(template.contactName);
+            $postingTitle.val(template.title);
+            $location.val(template.location);
+            $zipCode.val(template.zipCode);
+            $postBody.val(template.postBody);
+
+            $squareFeet.val(template.squareFeet);
+            $rent.val(template.rent);
+            $bedrooms.val(template.bedrooms);
+            $bathrooms.val(template.bathrooms);
+            $laundry.val(template.laundry);
+            $parking.val(template.parking);
+
+            $cats.prop('checked', template.catsAllowed);
+            $dogs.prop('checked', template.dogsAllowed);
+
+            $street.val(template.street);
+            $crossStreet.val(template.crossStreet);
+            $city.val(template.city);
+            $state.val(template.state);
+
+            // reset dropdown
+            $(this).val(TEMPLATE_SELECT);
+        }
+    });
+
+    /*
     $body.on('click', '.tb-paste-template', function () {
         // non=optionals
         $byPhone.prop('checked', true);
@@ -137,6 +204,7 @@ self.templatePicker = function () {
         $state.val(template.state);
 
     });
+    */
 };
 
 self.templateBuilder = function () {
