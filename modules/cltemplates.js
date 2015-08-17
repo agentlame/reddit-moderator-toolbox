@@ -12,14 +12,14 @@ self.register_setting('templates', {
     'advanced': true
 });
 
-    // Basic settings.
 self.register_setting('builder', {
     'type': 'action',
     'title': 'template builder',
     'class': 'tb-template-builder',
     'event': TB.utils.events.TB_TEMPLATE_BUILDER
 });
-var template = {
+
+var templateStruc = {
     templateName: '',
     phoneNumber: '',
     contactName: '',
@@ -29,13 +29,12 @@ var template = {
     postBody: '',
     squareFeet: '',
     rent: '',
-    bedrooms: '',
-    bathrooms: '',
-    laundry: '',
-    parking: '',
+    bedrooms: '0',
+    bathrooms: '3',
+    laundry: '2',
+    parking: '4',
     catsAllowed: false,
     dogsAllowed: false,
-    wantMap: '',
     street: '',
     crossStreet: '',
     city: '',
@@ -57,24 +56,30 @@ self.templatePicker = function () {
     self.log('posting page!');
 
 
-    var $byPhone = $('#contact_phone_ok'), //check
+    var $titleDiv = $('.title '),
+
+        $byPhone = $('#contact_phone_ok'), //check
+        $showMap = $('#wantamap'), //check
+
         $contactPhone = $('#contact_phone'),
         $contactName = $('#contact_name'),
         $postingTitle = $('#PostingTitle'),
         $location = $('#GeographicArea'),
         $zipCode = $('#postal_code'),
+
         $postBody = $('#PostingBody'),
-        $titleDiv = $('.title '),
 
         $squareFeet = $('#Sqft'),
         $rent = $('input[name=Ask]'),
         $bedrooms = $('#Bedrooms'), //select
         $bathrooms = $('#bathrooms'), //select
+
         $laundry = $('#laundry'), //select
         $parking = $('#parking'), //select
+
         $cats = $('#pets_cat'), //check
         $dogs = $('#pets_dog'), //check
-        $showMap = $('#wantamap'), //check
+
         $street = $('#xstreet0'),
         $crossStreet = $('#xstreet1'),
         $city = $('#city'),
@@ -85,15 +90,14 @@ self.templatePicker = function () {
     var TEMPLATE_SELECT = 'TEMPLATE_SELECT',
         templates = self.setting('templates');
 
-    if (templates.length <1 ){
+    if (templates.length < 1) {
         self.log('no templates found');
         return;
     }
 
     self.log('adding template select');
     $titleDiv.before('<select class="tb-template-select"><option value="' + TEMPLATE_SELECT + '">select template</option></select>\
-    &nbsp;<button class="tb-template-edit" >add/edit templates</button> \
-        <br><br>');
+        &nbsp;<button class="tb-template-edit" >add/edit templates</button><br><br>');
 
 
     var $templateSelect = $('.tb-template-select');
@@ -152,7 +156,7 @@ self.templatePicker = function () {
         }
     });
 
-    $body.on('click','.tb-template-edit', function (e) {
+    $body.on('click', '.tb-template-edit', function (e) {
         e.preventDefault();
         self.log('loading template builder');
 
@@ -165,70 +169,70 @@ self.templateBuilder = function () {
     TB.utils.catchEvent(TB.utils.events.TB_TEMPLATE_BUILDER, function () {
         self.log('loading template builder');
 
-        var $overlay = TB.ui.overlay(
+        TB.ui.overlay(
             'template builder',
             [
                 {
                     title: '',
                     tooltip: '',
                     content: '\
-            <a href="javascript:;" id="tb-add-template"><img src="data:image/png;base64,' + TBui.iconAdd + '"> Add new template</a>\
-            <span id="tb-add-template-form" style="display: none">\
-                <input type="text" id="template-name" placeholder="name of template" class="req"/><br/>\
-                <input type="text" id="contact-name" placeholder="contact name" /><br/>\
-                <input type="text" id="post-title" placeholder="title of post" class="req"/><br/>\
-                <input type="text" id="post-location" placeholder="location" class="req"/><br/>\
-                \
-                <input type="number" id="contact-phone" placeholder="phone number" /> \
-                <input type="number" id="zip-code" placeholder="zipcode" />\
-                <input type="number" id="square-feet" placeholder="square feet" /> \
-                <input type="number" id="rent" placeholder="rent" /> <br/>\
-                \
-                <textarea class="post-body" rows="10" placeholder="posting body"></textarea><br/>\
-                <!-- NOTE: the values used are based on the values used on the posting page. That is why they seem out of order. -->\
-                <label> bedrooms: <select id="post-bedrooms"> \
-                    <option value="0">0</option>\
-                    <option value="1">1</option>\
-                    <option value="2">2</option>\
-                    <option value="3">3</option>\
-                    <option value="4">4</option>\
-                </select></label>\
-                <label> bathrooms: <select id="post-bathrooms">\
-                    <option value="3">1</option>\
-                    <option value="4">1.5</option>\
-                    <option value="5">2</option>\
-                    <option value="6">2.5</option>\
-                    <option value="7">3</option>\
-                </select></label>\
-                <label> laundry: <select id="post-laundry">\
-                    <option value="2">laundry in bldg</option>\
-                    <option value="1">w/d in unit</option>\
-                    <option value="3">laundry on site</option>\
-                    <option value="4">w/d hookups</option>\
-                    <option value="5">no laundry on site</option>\
-                </select></label>\
-                <label> parking: <select id="post-parking">\
-                    <option value="4">off-street parking</option>\
-                    <option value="5">street parking</option>\
-                    <option value="1">carport</option>\
-                    <option value="2">attached garage</option>\
-                    <option value="3">detached garage</option>\
-                    <option value="7">no parking</option>\
-                </select></label> <br/>\
-                \
-                <label><input type="checkbox" id="cats-allowed">cats allowed</label>\
-                <label><input type="checkbox" id="dogs-allowed">dogs allowed</label>\
-                \
-                <input type="text" id="post-street" placeholder="street address"/><br/>\
-                <input type="text" id="cross-street" placeholder="cross street (optional)" /><br/>\
-                <input type="text" id="post-city" placeholder="city" /><br/>\
-                <input type="text" id="post-state" placeholder="state" /><br/>\
-                \
-                <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
-            </span>\
-            <table id="tb-template-list">\
-            </table>\
-            ',
+                <a href="javascript:;" id="tb-add-template"><img src="data:image/png;base64,' + TBui.iconAdd + '"> Add new template</a>\
+                <span id="tb-add-template-form" style="display: none">\
+                    <input type="text" id="template-name" placeholder="name of template" class="req"/><br/>\
+                    <input type="text" id="contact-name" placeholder="contact name" /><br/>\
+                    <input type="text" id="post-title" placeholder="title of post" class="req"/><br/>\
+                    <input type="text" id="post-location" placeholder="location" class="req"/><br/>\
+                    \
+                    <input type="number" id="contact-phone" placeholder="phone number" /> \
+                    <input type="number" id="zip-code" placeholder="zipcode" />\
+                    <input type="number" id="square-feet" placeholder="square feet" /> \
+                    <input type="number" id="rent" placeholder="rent" /> <br/>\
+                    \
+                    <textarea class="post-body" rows="10" placeholder="posting body"></textarea><br/>\
+                    <!-- NOTE: the values used are based on the values used on the posting page. That is why they seem out of order. -->\
+                    <label> bedrooms: <select id="post-bedrooms"> \
+                        <option value="0">0</option>\
+                        <option value="1">1</option>\
+                        <option value="2">2</option>\
+                        <option value="3">3</option>\
+                        <option value="4">4</option>\
+                    </select></label>\
+                    <label> bathrooms: <select id="post-bathrooms">\
+                        <option value="3">1</option>\
+                        <option value="4">1.5</option>\
+                        <option value="5">2</option>\
+                        <option value="6">2.5</option>\
+                        <option value="7">3</option>\
+                    </select></label>\
+                    <label> laundry: <select id="post-laundry">\
+                        <option value="2">laundry in bldg</option>\
+                        <option value="1">w/d in unit</option>\
+                        <option value="3">laundry on site</option>\
+                        <option value="4">w/d hookups</option>\
+                        <option value="5">no laundry on site</option>\
+                    </select></label>\
+                    <label> parking: <select id="post-parking">\
+                        <option value="4">off-street parking</option>\
+                        <option value="5">street parking</option>\
+                        <option value="1">carport</option>\
+                        <option value="2">attached garage</option>\
+                        <option value="3">detached garage</option>\
+                        <option value="7">no parking</option>\
+                    </select></label> <br/>\
+                    \
+                    <label><input type="checkbox" id="cats-allowed">cats allowed</label>\
+                    <label><input type="checkbox" id="dogs-allowed">dogs allowed</label>\
+                    \
+                    <input type="text" id="post-street" placeholder="street address"/><br/>\
+                    <input type="text" id="cross-street" placeholder="cross street (optional)" /><br/>\
+                    <input type="text" id="post-city" placeholder="city" /><br/>\
+                    <input type="text" id="post-state" placeholder="state" /><br/>\
+                    \
+                    <input class="save-new-template" type="button" value="Save new template"><input class="cancel-new-template" type="button" value="Cancel adding template">\
+                </span>\
+                <table id="tb-template-list">\
+                </table>\
+                ',
                     footer: ''
                 }
             ],
@@ -333,10 +337,10 @@ self.templateBuilder = function () {
         });
 
 
-         // cancel
-         $body.on('click', '.cancel-new-template', function () {
-             clearForm();
-         });
+        // cancel
+        $body.on('click', '.cancel-new-template', function () {
+            clearForm();
+        });
 
 
         // With this function we'll fetch the templates!
@@ -359,68 +363,68 @@ self.templateBuilder = function () {
 
 
                 var templateTemplate = '\
-                <tr class="template" data-template="{{i}}">\
-                    <td class="template-buttons">\
-                        <a href="javascript:;" data-template="{{idx}}" class="edit"><img src="data:image/png;base64,{{uiCommentEdit}}"></a> <br>\
-                        <a href="javascript:;" data-template="{{idx}}" class="delete"><img src="data:image/png;base64,{{uiCommentRemove}}"></a>\
-                    </td>\
-                    <td class="template-content" data-template="{{idx}}">\
-                        <span class="template-label" data-for="template-{{idx}}"><span><h3 class="template-title">{{label}}</h3>{{title}}</span></span><br>\
-                        <span class="template-edit" style="display: none">\
-                        \
-                        <input type="text" id="template-name" placeholder="name of template" value="{{templateName}}"/><br/>\
-                        <input type="text" id="contact-name" placeholder="contact name" value="{{contactName}}"/><br/>\
-                        <input type="text" id="post-title" placeholder="title of post" value="{{title}}"/><br/>\
-                        <input type="text" id="post-location" placeholder="location" value="{{location}}"/><br/>\
-                        \
-                        <input type="number" id="contact-phone" placeholder="phone number" value="{{phoneNumber}}"/> \
-                        <input type="number" id="zip-code" placeholder="zipcode" value="{{zipCode}}"/>\
-                        <input type="number" id="square-feet" placeholder="square feet" value="{{squareFeet}}"/> \
-                        <input type="number" id="rent" placeholder="rent" value="{{rent}}"/> <br/>\
-                        \
-                        <textarea class="post-body" rows="10" placeholder="posting body">{{postBody}}</textarea><br/>\
-                        \
-                        <label> bedrooms: <select class="{{idx}}-bedrooms" id="post-bedrooms"> \
-                            <option value="0">0</option>\
-                            <option value="1">1</option>\
-                            <option value="2">2</option>\
-                            <option value="3">3</option>\
-                            <option value="4">4</option>\
-                        </select></label>\
-                        <label> bathrooms: <select class="{{idx}}-bathrooms" id="post-bathrooms">\
-                            <option value="3">1</option>\
-                            <option value="4">1.5</option>\
-                            <option value="5">2</option>\
-                            <option value="6">2.5</option>\
-                            <option value="7">3</option>\
-                        </select></label>\
-                        <label> laundry: <select class="{{idx}}-laundry" id="post-laundry">\
-                            <option value="2">laundry in bldg</option>\
-                            <option value="1">w/d in unit</option>\
-                            <option value="3">laundry on site</option>\
-                            <option value="4">w/d hookups</option>\
-                            <option value="5">no laundry on site</option>\
-                        </select></label>\
-                        <label> parking: <select class="{{idx}}-parking" id="post-parking">\
-                            <option value="4">off-street parking</option>\
-                            <option value="5">street parking</option>\
-                            <option value="1">carport</option>\
-                            <option value="2">attached garage</option>\
-                            <option value="3">detached garage</option>\
-                            <option value="7">no parking</option>\
-                        </select></label> <br/>\
-                        \
-                        <label><input type="checkbox" class="{{idx}}-cats" id="cats-allowed">cats allowed</label>\
-                        <label><input type="checkbox" class="{{idx}}-dogs" id="dogs-allowed">dogs allowed</label>\
-                        \
-                        <input type="text" id="post-street" placeholder="street address" value="{{street}}"/><br/>\
-                        <input type="text" id="cross-street" placeholder="cross street (optional)" value="{{crossStreet}}"/><br/>\
-                        <input type="text" id="post-city" placeholder="city" value="{{city}}"/><br/>\
-                        <input type="text" id="post-state" placeholder="state" value="{{state}}"/><br/>\
-                        <input class="save-edit-template" type="button" value="Save template"><input class="cancel-edit-template" type="button" value="Cancel editing template">\
-                        </span>\
-                    </td>\
-                </tr>';
+                    <tr class="template" data-template="{{i}}">\
+                        <td class="template-buttons">\
+                            <a href="javascript:;" data-template="{{idx}}" class="edit"><img src="data:image/png;base64,{{uiCommentEdit}}"></a><br>\
+                            <a href="javascript:;" data-template="{{idx}}" class="delete"><img src="data:image/png;base64,{{uiCommentRemove}}"></a>\
+                        </td>\
+                        <td class="template-content" data-template="{{idx}}">\
+                            <span class="template-label" data-for="template-{{idx}}"><span><h3 class="template-title">{{label}}</h3>{{title}}</span></span><br>\
+                            <span class="template-edit" style="display: none">\
+                            \
+                            <input type="text" id="template-name" placeholder="name of template" value="{{templateName}}"/><br/>\
+                            <input type="text" id="contact-name" placeholder="contact name" value="{{contactName}}"/><br/>\
+                            <input type="text" id="post-title" placeholder="title of post" value="{{title}}"/><br/>\
+                            <input type="text" id="post-location" placeholder="location" value="{{location}}"/><br/>\
+                            \
+                            <input type="number" id="contact-phone" placeholder="phone number" value="{{phoneNumber}}"/>\
+                            <input type="number" id="zip-code" placeholder="zipcode" value="{{zipCode}}"/>\
+                            <input type="number" id="square-feet" placeholder="square feet" value="{{squareFeet}}"/>\
+                            <input type="number" id="rent" placeholder="rent" value="{{rent}}"/> <br/>\
+                            \
+                            <textarea class="post-body" rows="10" placeholder="posting body">{{postBody}}</textarea><br/>\
+                            \
+                            <label> bedrooms: <select class="{{idx}}-bedrooms" id="post-bedrooms">\
+                                <option value="0">0</option>\
+                                <option value="1">1</option>\
+                                <option value="2">2</option>\
+                                <option value="3">3</option>\
+                                <option value="4">4</option>\
+                            </select></label>\
+                            <label> bathrooms: <select class="{{idx}}-bathrooms" id="post-bathrooms">\
+                                <option value="3">1</option>\
+                                <option value="4">1.5</option>\
+                                <option value="5">2</option>\
+                                <option value="6">2.5</option>\
+                                <option value="7">3</option>\
+                            </select></label>\
+                            <label> laundry: <select class="{{idx}}-laundry" id="post-laundry">\
+                                <option value="2">laundry in bldg</option>\
+                                <option value="1">w/d in unit</option>\
+                                <option value="3">laundry on site</option>\
+                                <option value="4">w/d hookups</option>\
+                                <option value="5">no laundry on site</option>\
+                            </select></label>\
+                            <label> parking: <select class="{{idx}}-parking" id="post-parking">\
+                                <option value="4">off-street parking</option>\
+                                <option value="5">street parking</option>\
+                                <option value="1">carport</option>\
+                                <option value="2">attached garage</option>\
+                                <option value="3">detached garage</option>\
+                                <option value="7">no parking</option>\
+                            </select></label><br/>\
+                            \
+                            <label><input type="checkbox" class="{{idx}}-cats" id="cats-allowed">cats allowed</label>\
+                            <label><input type="checkbox" class="{{idx}}-dogs" id="dogs-allowed">dogs allowed</label>\
+                            \
+                            <input type="text" id="post-street" placeholder="street address" value="{{street}}"/><br/>\
+                            <input type="text" id="cross-street" placeholder="cross street (optional)" value="{{crossStreet}}"/><br/>\
+                            <input type="text" id="post-city" placeholder="city" value="{{city}}"/><br/>\
+                            <input type="text" id="post-state" placeholder="state" value="{{state}}"/><br/>\
+                            <input class="save-edit-template" type="button" value="Save template"><input class="cancel-edit-template" type="button" value="Cancel editing template">\
+                            </span>\
+                        </td>\
+                    </tr>';
 
                 var templateTemplateHTML = TBUtils.template(templateTemplate, {
                     idx: idx,
@@ -450,16 +454,18 @@ self.templateBuilder = function () {
                 var $templatesList = $body.find('#tb-template-list');
                 $templatesList.append(templateTemplateHTML);
 
-                $('.'+ idx +'-bedrooms').val(template.bedrooms);
-                $('.'+ idx +'-bathrooms').val(template.bathrooms);
-                $('.'+ idx +'-laundry').val(template.laundry);
-                $('.'+ idx +'-parking').val(template.parking);
+                // selects and props can't be templated.
+                $('.' + idx + '-bedrooms').val(template.bedrooms);
+                $('.' + idx + '-bathrooms').val(template.bathrooms);
+                $('.' + idx + '-laundry').val(template.laundry);
+                $('.' + idx + '-parking').val(template.parking);
 
-                $('.'+ idx +'-cats').prop('checked', template.catsAllowed);
-                $('.'+ idx +'-dogs').prop('checked', template.dogsAllowed);
+                $('.' + idx + '-cats').prop('checked', template.catsAllowed);
+                $('.' + idx + '-dogs').prop('checked', template.dogsAllowed);
             });
 
         }
+
         populateTemplates();
 
         // editing of templates
@@ -592,7 +598,6 @@ self.templateBuilder = function () {
             $templateContent.find('.template-label').show();
             $templateContent.find('.template-edit').hide();
         });
-
     });
 };
 
