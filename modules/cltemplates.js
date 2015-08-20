@@ -282,7 +282,7 @@ self.templateBuilder = function () {
         $body.on('click', '.save-new-template', function () {
             var templateName = $body.find('#template-name').val(),
                 templateTitle = $body.find('#post-title').val(),
-                templateLocation = $body.find('#post-location').val();
+                templateRent = $body.find('#rent').val();
 
             if (templateName.length < 1) {
                 TB.ui.textFeedback('template name is required', TB.ui.FEEDBACK_NEGATIVE);
@@ -294,8 +294,8 @@ self.templateBuilder = function () {
                 return;
             }
 
-            if (templateLocation.length < 1) {
-                TB.ui.textFeedback('location is required', TB.ui.FEEDBACK_NEGATIVE);
+            if (templateRent.length < 1) {
+                TB.ui.textFeedback('rent is required', TB.ui.FEEDBACK_NEGATIVE);
                 return;
             }
 
@@ -303,13 +303,13 @@ self.templateBuilder = function () {
                 templateName: templateName,
                 contactName: $body.find('#contact-name').val(),
                 title: templateTitle,
-                location: templateLocation,
+                location: $body.find('#post-location').val(),
                 phoneNumber: $body.find('#contact-phone').val(),
                 zipCode: $body.find('#zip-code').val(),
                 postBody: $body.find('.post-body').val(),
 
                 squareFeet: $body.find('#square-feet').val(),
-                rent: $body.find('#rent').val(),
+                rent: templateRent,
                 bedrooms: $body.find('#post-bedrooms').val(),
                 bathrooms: $body.find('#post-bathrooms').val(),
                 laundry: $body.find('#post-laundry').val(),

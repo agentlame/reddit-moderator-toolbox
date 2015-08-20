@@ -175,6 +175,7 @@ function initwrapper() {
 
     TBUtils.events = {
         TB_TEMPLATE_BUILDER: 'TB_TEMPLATE_BUILDER',
+        TB_CHECK_POSTS: 'TB_CHECK_POSTS',
         TB_ABOUT_PAGE: "TB_ABOUT_PAGE"
     };
 
@@ -674,7 +675,7 @@ function initwrapper() {
 
             for (var end = Math.min(array.length, counter + chunkSize); counter < end; counter++) {
                 var ret = call(array[counter], counter, array);
-                if (ret === false) window.setTimeout(finish, delay);
+                if (ret === false) return window.setTimeout(finish, delay);
             }
             if (counter < array.length) {
                 window.setTimeout(doChunk, delay);

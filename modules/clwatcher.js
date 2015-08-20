@@ -23,7 +23,8 @@ self.register_setting('pageToCheck', {
 self.register_setting('contactNumber', {
     'type': 'number',
     'default': 0,
-    'title': 'Contact number of post'
+    'title': 'Contact number of post',
+    'hidden': true
 });
 
 // Advanced settings
@@ -31,14 +32,14 @@ self.register_setting('checkDelay', {
     'type': 'number',
     'default': 1000,
     'title': 'Delay between checking each post (in milliseconds)',
-    'advanced': true
+    'advanced': true,
+    'hidden': true
 });
 
 self.register_setting('checkInterval', {
     'type': 'number',
-    'default': 50, // 60 secs.
-    'advanced': true,
-    'title': 'Interval to check for new items (time in minutes).'
+    'default': 35, // 60 secs.
+    'title': 'How often to check the front page (time in minutes).'
 });
 
 /// Private storage settings.
@@ -52,14 +53,15 @@ var now = TB.utils.getTime();
 
 self.init = function () {
 
-    var wwwNotifications = self.setting('wwwNotifications'),
-        checkInterval = TB.utils.minutesToMilliseconds(self.setting('checkInterval'));//setting is in seconds, convert to milliseconds.
+    TB.utils.catchEvent(TB.utils.events.TB_CHECK_POSTS, function () {
+        self.log('running check');
+        self.checkPage();
+    });
+
+    var checkInterval = TB.utils.minutesToMilliseconds(self.setting('checkInterval'));//setting is in seconds, convert to milliseconds.
 
 
     function getmessages() {
-        self.log('getting messages');
-
-
         var lastchecked = self.setting('lastChecked');
 
         if ((now - lastchecked) < checkInterval) {
@@ -76,7 +78,66 @@ self.init = function () {
 };
 
 self.checkPage = function() {
-    var pageToCheck = self.setting('pageToCheck');
+    var pageToCheck = self.setting('pageToCheck'),
+        templates = TBStorage.getSetting('ClTemplates', 'templates', []);
+
+    if (templates.length <= 0) {
+        self.log('No templates found.');
+        TBUtils.alert("No posting templates click. Click here to add one.", function () {
+            TB.utils.sendEvent(TB.utils.events.TB_TEMPLATE_BUILDER);
+        });
+        return;
+    }
+
+    $.get('//' + pageToCheck, function (page) {
+        var $page = $(page),
+            $title = $page.find('.hdrlnk'),
+            totalLinks = $title.length,
+            found = false;
+            //$location = $page.find('.pnr');
+
+        // We're checking now.
+        self.setting('lastChecked', now);
+
+        self.log(totalLinks);
+        TBui.longLoadNonPersistent(true, "Checking front page for posts.", TBui.FEEDBACK_NEUTRAL, 10000, TBui.DISPLAY_BOTTOM);
+
+        function checkTitle(title, idx){
+
+            var $this = $(title),
+                postTitle = $this.text(),
+                postRent = $this.parent().next().find('.price').text();
+
+            self.log(idx);
+            self.log(postTitle);
+            self.log(postRent);
+
+            $.each(templates, function () {
+                var rent = '$' + this.rent.toString();
+                if (this.title == postTitle && rent == postRent) {
+                    found = true;
+                    return false;
+                }
+            });
+        }
+
+        function pageCheckComplete() {
+
+            if (!found) {
+                TBUtils.notification("You do not have a post on the front page!", "Click here to post a new ad.", "//post.craigslist.org/", 100000);
+            } else{
+                TB.ui.textFeedback('Found post on front page!', TB.ui.FEEDBACK_POSITIVE, 1000, TB.ui.DISPLAY_BOTTOM);
+            }
+            TBui.longLoadNonPersistent(false);
+        }
+
+        if (totalLinks > 0) {
+            TBUtils.forEachChunked($title, 5, 500, checkTitle, pageCheckComplete);
+        }
+
+    });
+
+    /*** check by number method ***
     $.get('//' + pageToCheck, function (page) {
         var $page = $(page),
             $hdrlnk = $page.find('.hdrlnk'),
@@ -160,7 +221,9 @@ self.checkPage = function() {
                 }, CHECK_DELAY * idx);
             })
         }
+
     });
+     */
 };
 
 TB.register_module(self);
