@@ -94,13 +94,17 @@ self.checkPage = function() {
             $title = $page.find('.hdrlnk'),
             totalLinks = $title.length,
             found = false;
-            //$location = $page.find('.pnr');
 
         // We're checking now.
         self.setting('lastChecked', now);
 
         self.log(totalLinks);
-        TBui.longLoadNonPersistent(true, "Checking front page for posts.", TBui.FEEDBACK_NEUTRAL, 10000, TBui.DISPLAY_BOTTOM);
+        //TBui.longLoadNonPersistent(true, "Checking front page for posts.", TBui.FEEDBACK_NEUTRAL, 3000, TBui.DISPLAY_BOTTOM);
+        TBui.textFeedback("Checking front page for posts.", TBui.FEEDBACK_NEUTRAL, 3000, TBui.DISPLAY_BOTTOM);
+
+        if (totalLinks > 0) {
+            TBUtils.forEachChunked($title, 5, 500, checkTitle, pageCheckComplete);
+        }
 
         function checkTitle(title, idx){
 
@@ -108,6 +112,7 @@ self.checkPage = function() {
                 postTitle = $this.text(),
                 postRent = $this.parent().next().find('.price').text();
 
+            TB.ui.textFeedback('Checking post '+ (idx + 1) +' of '+ totalLinks +'.', TBui.FEEDBACK_NEUTRAL, 1000, TBui.DISPLAY_BOTTOM);
             self.log(idx);
             self.log(postTitle);
             self.log(postRent);
@@ -119,20 +124,18 @@ self.checkPage = function() {
                     return false;
                 }
             });
+
+            if (found) return false;
         }
 
         function pageCheckComplete() {
 
             if (!found) {
-                TBUtils.notification("You do not have a post on the front page!", "Click here to post a new ad.", "//post.craigslist.org/", 100000);
+                TBUtils.notification('You do not have a post on the front page!', 'Click here to post a new ad.', "//post.craigslist.org/", 1000000);
             } else{
-                TB.ui.textFeedback('Found post on front page!', TB.ui.FEEDBACK_POSITIVE, 1000, TB.ui.DISPLAY_BOTTOM);
+                TB.ui.textFeedback('You have a post on the front page!', TB.ui.FEEDBACK_POSITIVE, 10000, TB.ui.DISPLAY_BOTTOM);
             }
-            TBui.longLoadNonPersistent(false);
-        }
-
-        if (totalLinks > 0) {
-            TBUtils.forEachChunked($title, 5, 500, checkTitle, pageCheckComplete);
+            //TBui.longLoadNonPersistent(false);
         }
 
     });

@@ -51,7 +51,7 @@
     padding: 2px !important;
     border-top: solid 1px #B6C9DD;
     left: 0;
-    right: 0;
+    /*right: 0;*/
 }
 
 .mod-toolbox #tb-bottombar-hidden {

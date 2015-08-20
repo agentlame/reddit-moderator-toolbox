@@ -129,7 +129,7 @@ self.init = function() {
     $body.append(modBar);
     $body.append(modbarhid);
 
-    $body.find('#tb-toolbarshortcuts').before('<a href="javascript:void(0)" id="tb-toolbar-mysubs" class="tb-check-now">Check Now</a> ');
+    $body.find('#tb-toolbarshortcuts').before('<a href="javascript:void(0)" id="tb-toolbar-mysubs" class="tb-check-now">Check Front Page For Posts</a> ');
 
     $body.on('click', '.tb-check-now', function () {
         TB.utils.sendEvent(TB.utils.events.TB_CHECK_POSTS);

@@ -498,7 +498,7 @@ self.templateBuilder = function () {
             var $this = $(this),
                 $templateContent = $this.closest('td.template-content'),
                 templateIndex = $templateContent.attr('data-template'),
-                templates = self.setting('templates')[templateIndex];
+                templates = self.setting('templates');
 
             if (!templateIndex) return;
 
