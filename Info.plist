@@ -35,7 +35,6 @@
 				<string>tbutils.js</string>
 				<string>tbmodule.js</string>
 				<string>modules/modbar.js</string>
-				<string>modules/clwatcher.js</string>
 				<string>tbmoduleinit.js</string>
 			</array>
 		</dict>
